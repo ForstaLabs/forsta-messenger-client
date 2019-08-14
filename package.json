@@ -19,6 +19,12 @@
   "devDependencies": {
     "docdash": "1.1.1",
     "eslint": "6.1.0",
+    "grunt": "1.0.4",
+    "grunt-contrib-concat": "1.0.1",
+    "grunt-contrib-uglify-es": "github:gruntjs/grunt-contrib-uglify#ccb95a70cad6a4",
     "jsdoc": "3.6.3"
+  },
+  "dependencies": {
+    "ifrpc": "1.2.1"
   }
 }

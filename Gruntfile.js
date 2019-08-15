@@ -34,7 +34,7 @@ module.exports = function(grunt) {
       app_deps: {
         src: [
           "../node_modules/ifrpc/src/ifrpc.js",
-          "loader.js"
+          "client.js"
         ].map(x => add_prefix('src', x)),
         dest: `${dist}/forsta-messenger-client.js`
       }

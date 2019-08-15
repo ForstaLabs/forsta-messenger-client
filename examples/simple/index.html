@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <script src="../../dist/forsta-messenger-client.js"></script>
+        <script>
+            function onLoaded(client) {
+                console.warn("It loaded:", client);
+            }
+
+            addEventListener('load', () => {
+                const client = new forsta.messenger.Client(document.querySelector('#client'),
+                                                           {orgEphemeralToken: 'TESTING'},
+                                                           {callback: onLoaded});
+            });
+        </script>
+    </head>
+    <body>
+        <div id="client" style="width: 80%; height: 80%;"></div>
+    </body>
+</html>

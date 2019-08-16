@@ -9,7 +9,10 @@
             addEventListener('load', () => {
                 const client = new forsta.messenger.Client(document.querySelector('#client'),
                                                            {orgEphemeralToken: 'TESTING'},
-                                                           {callback: onLoaded});
+                {
+                    callback: onLoaded,
+                    url: 'http://localhost:1080/@'
+                });
             });
         </script>
     </head>

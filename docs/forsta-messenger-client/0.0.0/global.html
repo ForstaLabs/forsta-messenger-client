@@ -134,7 +134,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line37">line 37</a>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line31">line 31</a>
     </li></ul></dd>
     
 
@@ -223,14 +223,15 @@
 
             
 
-            <td class="description last">Org level ephemeral user token.</td>
+            <td class="description last">Org ephemeral user token created at
+                                         <a href="https://app.forsta.io/authtokens">https://app.forsta.io/authtokens</a>.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>userAuthToken</code></td>
+                <td class="name"><code>jwt</code></td>
             
 
             <td class="type">
@@ -254,7 +255,9 @@
 
             
 
-            <td class="description last">The secret auth token for the forsta user account.</td>
+            <td class="description last">An existing JSON Web Token for a Forsta user account. Note that
+                           the JWT may be updated during use.  Subscribe to the `jwtupdate`
+                           event to handle updates made during extended use.</td>
         </tr>
 
     
@@ -268,8 +271,6 @@
 
 <div class="description">
     Auth is a single value union.  Only ONE property should be set.
-
-Auth tokens are managed at <a href="https://app.forsta.io/authtokens">https://app.forsta.io/authtokens</a>.
 </div>
 
 
@@ -302,7 +303,7 @@ Auth tokens are managed at <a href="https://app.forsta.io/authtokens">https://ap
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line31">line 31</a>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line55">line 55</a>
     </li></ul></dd>
     
 
@@ -429,12 +430,145 @@ Auth tokens are managed at <a href="https://app.forsta.io/authtokens">https://ap
             
                 <td class="default">
                 
-                    <code>https://app.forsta.io/@embed</code>
+                    <code>https://app.forsta.io/@</code>
                 
                 </td>
             
 
-            <td class="description last">Override the default embed url.</td>
+            <td class="description last">Override the default site url.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>showNav</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Unhide the optional navigation panel containing threads.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>showThreadAside</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Unhide the optional right aside panel containing thread info.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>showThreadHeader</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Unhide the optional header panel.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ephemeralUserInfo</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#EphemeralUserInfo">EphemeralUserInfo</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Details about the ephemeral user to be created or used.
+                                                  Only relevant when orgEphemeralToken auth is used.</td>
         </tr>
 
     
@@ -445,6 +579,265 @@ Auth tokens are managed at <a href="https://app.forsta.io/authtokens">https://ap
 
 
 
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="EphemeralUserInfo">EphemeralUserInfo</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line43">line 43</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>firstName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">First name of the user.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>lastName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Last name of the user.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>email</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Email of the user.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>phone</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Phone of the user.  NOTE: Should be SMS capable.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>salt</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Random value used to distinguish user accounts in advanced use-cases.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description">
+    Information about the ephemeral user that will be created or reused for this session.
+</div>
 
 
 

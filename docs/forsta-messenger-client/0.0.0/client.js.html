@@ -73,19 +73,38 @@ forsta.messenger = forsta.messenger || {};
     forsta.messenger.Client = class Client {
 
         /**
-         * @typedef {Object} ClientOptions
-         * @property {Function} [callback] - Callback to run when client is loaded.
-         * @property {string} [url=https://app.forsta.io/@embed] - Override the default embed url.
+         * Auth is a single value union.  Only ONE property should be set.
+         *
+         *
+         * @typedef {Object} ClientAuth
+         * @property {string} [orgEphemeralToken] - Org ephemeral user token created at
+         *                                          {@link https://app.forsta.io/authtokens}.
+         * @property {string} [jwt] - An existing JSON Web Token for a Forsta user account. Note that
+         *                            the JWT may be updated during use.  Subscribe to the `jwtupdate`
+         *                            event to handle updates made during extended use.
          */
 
         /**
-         * Auth is a single value union.  Only ONE property should be set.
+         * Information about the ephemeral user that will be created or reused for this session.
          *
-         * Auth tokens are managed at {@link https://app.forsta.io/authtokens}.
          *
-         * @typedef {Object} ClientAuth
-         * @property {string} [orgEphemeralToken] - Org level ephemeral user token.
-         * @property {string} [userAuthToken] - The secret auth token for the forsta user account.
+         * @typedef {Object} EphemeralUserInfo
+         * @property {string} [firstName] - First name of the user.
+         * @property {string} [lastName] - Last name of the user.
+         * @property {string} [email] - Email of the user.
+         * @property {string} [phone] - Phone of the user.  NOTE: Should be SMS capable.
+         * @property {string} [salt] - Random value used to distinguish user accounts in advanced use-cases.
+         */
+
+        /**
+         * @typedef {Object} ClientOptions
+         * @property {Function} [callback] - Callback to run when client is loaded.
+         * @property {string} [url=https://app.forsta.io/@] - Override the default site url.
+         * @property {bool} showNav - Unhide the optional navigation panel containing threads.
+         * @property {bool} showThreadAside - Unhide the optional right aside panel containing thread info.
+         * @property {bool} showThreadHeader - Unhide the optional header panel.
+         * @property {EphemeralUserInfo} ephemeralUserInfo - Details about the ephemeral user to be created or used.
+         *                                                   Only relevant when orgEphemeralToken auth is used.
          */
 
 
@@ -105,17 +124,9 @@ forsta.messenger = forsta.messenger || {};
             if (!auth) {
                 throw new TypeError('auth argument missing');
             }
-            const urlParams = new URLSearchParams();
-            if (auth.orgEphemeralToken) {
-                urlParams.set('token', auth.orgEphemeralToken);
-            } else if (auth.userAuthToken) {
-                urlParams.set('userToken', auth.userAuthToken);
-            } else {
-                throw new TypeError('invalid auth value');
-            }
-            options = options || {};
+            this.auth = auth;
+            this.options = options || {};
             this.callback = options.callback;
-            this.url = options.url || 'https://app.forsta.io/@embed';
             this._iframe = document.createElement('iframe');
             this._iframe.style.border = '0 solid transparent';
             this._iframe.style.width = '100%';
@@ -125,12 +136,19 @@ forsta.messenger = forsta.messenger || {};
                 this._rpc = ifrpc.init(this._iframe.contentWindow);
                 this._rpc.addEventListener('init', this.onClientInit.bind(this));
             });
-            this._iframe.setAttribute('src', `${this.url}?${urlParams}`);
+            const url = options.url || 'https://app.forsta.io/@';
+            this._iframe.setAttribute('src', `${url}?managed`);
             el.appendChild(this._iframe);
         }
 
         async onClientInit() {
             console.debug('client init');
+            await this._rpc.invokeCommand('configure', {
+                auth: this.auth,
+                showNav: !!this.options.showNav,
+                showThreadAside: !!this.options.showThreadAside,
+                showThreadHeader: !!this.options.showThreadHeader,
+            });
             if (this.callback) {
                 this.callback(this);
             }

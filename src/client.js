@@ -1,4 +1,5 @@
 // vim: ts=4:sw=4:expandtab
+/* global forsta, ifrpc */
 
 
 /**
@@ -12,12 +13,6 @@ self.forsta = self.forsta || {};
 forsta.messenger = forsta.messenger || {};
 
 
-/**
- * @external Element
- * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Element}
- */
-
-
 (function() {
     'use strict';
 
@@ -25,6 +20,10 @@ forsta.messenger = forsta.messenger || {};
      * The Forsta messenger client class.
      *
      * @memberof forsta.messenger
+     *
+     * @example
+     * const client = new forsta.messenger.Client(document.querySelector('#myDivId'),
+     *                                            {orgEphemeralToken: 'secret'});
      */
     forsta.messenger.Client = class Client {
 
@@ -66,13 +65,10 @@ forsta.messenger = forsta.messenger || {};
 
 
         /**
-         * @param {external:Element} el - Element where the messenger should be loaded.
+         * @param {Element} el - Element where the messenger should be loaded.
+         *                       {@link https://developer.mozilla.org/en-US/docs/Web/API/Element}
          * @param {ClientAuth} auth - Auth configuration for Forsta user account.
          * @param {ClientOptions} [options]
-         *
-         * @example
-         * const client = new forsta.messenger.Client(document.querySelector('#myDivId'),
-         *                                            {orgEphemeralToken: 'secret'});
          */
         constructor(el, auth, options) {
             if (!(el instanceof Element)) {
@@ -84,22 +80,23 @@ forsta.messenger = forsta.messenger || {};
             this.auth = auth;
             this.options = options || {};
             this.callback = options.callback;
+
+            /** @member {forsta.messenger.NavController} - The navigation controller */
+            this.nav = new forsta.messenger.NavController(this);
             this._iframe = document.createElement('iframe');
             this._iframe.style.border = '0 solid transparent';
             this._iframe.style.width = '100%';
             this._iframe.style.height = '100%';
             this._iframe.addEventListener('load', () => {
-                const iframeWindow = this._iframe.contentWindow;
                 this._rpc = ifrpc.init(this._iframe.contentWindow);
-                this._rpc.addEventListener('init', this.onClientInit.bind(this));
+                this._rpc.addEventListener('init', this._onClientInit.bind(this));
             });
             const url = options.url || 'https://app.forsta.io/@';
             this._iframe.setAttribute('src', `${url}?managed`);
             el.appendChild(this._iframe);
         }
 
-        async onClientInit() {
-            console.debug('client init');
+        async _onClientInit() {
             await this._rpc.invokeCommand('configure', {
                 auth: this.auth,
                 showNav: !!this.options.showNav,
@@ -108,8 +105,28 @@ forsta.messenger = forsta.messenger || {};
                 showThreadHeader: !!this.options.showThreadHeader,
             });
             if (this.callback) {
-                this.callback(this);
+                await this.callback(this);
             }
+        }
+
+        /**
+         * Add an event listener.
+         *
+         * @param {string} event - Name of the event to listen to.
+         * @param {Function} callback - Callback function to invoke.
+         */
+        addEventListener(event, callback) {
+            this._rpc.addEventListener(event, callback);
+        }
+
+        /**
+         * Remove an event listener.
+         *
+         * @param {string} event - Name of the event to stop listening to.
+         * @param {Function} callback - Callback function used with {@link addEventListener}.
+         */
+        removeEventListener(event, callback) {
+            this._rpc.removeEventListener(event, callback);
         }
     };
 })();

@@ -249,9 +249,10 @@ forsta.messenger = forsta.messenger || {};
          * @typedef {Object} ClientOptions
          * @property {Function} [callback] - Callback to run when client is loaded.
          * @property {string} [url=https://app.forsta.io/@] - Override the default site url.
-         * @property {bool} showNav - Unhide the optional navigation panel containing threads.
+         * @property {bool} showNav - Unhide the navigation panel used for thread selection.
+         * @property {bool} showHeader - Unhide the header panel.
          * @property {bool} showThreadAside - Unhide the optional right aside panel containing thread info.
-         * @property {bool} showThreadHeader - Unhide the optional header panel.
+         * @property {bool} showThreadHeader - Unhide the thread header panel.
          * @property {EphemeralUserInfo} ephemeralUserInfo - Details about the ephemeral user to be created or used.
          *                                                   Only relevant when orgEphemeralToken auth is used.
          */
@@ -295,6 +296,7 @@ forsta.messenger = forsta.messenger || {};
             await this._rpc.invokeCommand('configure', {
                 auth: this.auth,
                 showNav: !!this.options.showNav,
+                showHeader: !!this.options.showHeader,
                 showThreadAside: !!this.options.showThreadAside,
                 showThreadHeader: !!this.options.showThreadHeader,
             });

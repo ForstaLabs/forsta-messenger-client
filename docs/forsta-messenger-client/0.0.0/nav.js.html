@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>messenger - Documentation</title>
+    <title>nav.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,115 +32,46 @@
 
 <div id="main">
     
-    <h1 class="page-title">messenger</h1>
+    <h1 class="page-title">nav.js</h1>
     
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2>
-            <span class="ancestors"><a href="forsta.html">forsta</a>.</span>
-        
-        messenger
-        </h2>
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line10">line 10</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// vim: ts=4:sw=4:expandtab
+/* global forsta */
 
 
+self.forsta = self.forsta || {};
+forsta.messenger = forsta.messenger || {};
 
 
-            
+(function() {
+    'use strict';
 
-            
-        
-        </div>
-    
+    /**
+     * Nav panel controller interface.
+     * DO NOT instantiate directly;  Use the `nav` property of {@link forsta.messenger.Client}.
+     *
+     * @memberof forsta.messenger
+     */
+    forsta.messenger.NavController = class NavController {
 
-    
-
-    
-
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="forsta.messenger.Client.html">Client</a></dt>
-            <dd></dd>
-        
-            <dt><a href="forsta.messenger.NavController.html">NavController</a></dt>
-            <dd></dd>
-        </dl>
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+        constructor(client) {
+            if (!(client instanceof forsta.messenger.Client)) {
+                throw new TypeError('client argument must be a Client instance');
+            }
+            this._client = client;
+        }
+    };
+})();
+</code></pre>
+        </article>
+    </section>
 
 
 

@@ -27,7 +27,7 @@
 
 <nav >
     
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="forsta.messenger.Client.html">Client</a><ul class='methods'><li data-type='method'><a href="forsta.messenger.Client.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#removeEventListener">removeEventListener</a></li></ul></li><li><a href="forsta.messenger.NavController.html">NavController</a></li></ul><h3>Namespaces</h3><ul><li><a href="forsta.html">forsta</a></li><li><a href="forsta.messenger.html">messenger</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="forsta.messenger.Client.html">Client</a><ul class='methods'><li data-type='method'><a href="forsta.messenger.Client.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#navPanelToggle">navPanelToggle</a></li><li data-type='method'><a href="forsta.messenger.Client.html#removeEventListener">removeEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadOpen">threadOpen</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadStartWithExpression">threadStartWithExpression</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="global.html#event:thread-message">thread-message</a></li></ul><h3>Namespaces</h3><ul><li><a href="forsta.html">forsta</a></li><li><a href="forsta.messenger.html">messenger</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <div id="main">
@@ -77,7 +77,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line73">line 73</a>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line85">line 85</a>
     </li></ul></dd>
     
 
@@ -260,6 +260,13 @@
 
 
 
+<h5>Fires:</h5>
+<ul>
+    <li><a href="global.html#event:thread-message">event:thread-message</a></li>
+
+    <li><a href="global.html#event:thread-message">event:thread-message</a></li>
+</ul>
+
 
 
 
@@ -290,83 +297,6 @@
     
 
     
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id="nav"><span class="type-signature"></span>nav<span class="type-signature"> :<a href="forsta.messenger.NavController.html">forsta.messenger.NavController</a></span></h4>
-
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line85">line 85</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description">
-    <p>The navigation controller</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="forsta.messenger.NavController.html">forsta.messenger.NavController</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-
-        
-    
 
     
         <h3 class="subsection-title">Methods</h3>
@@ -388,7 +318,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line118">line 118</a>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line133">line 133</a>
     </li></ul></dd>
     
 
@@ -535,6 +465,154 @@
 
     
 
+    <h4 class="name" id="navPanelToggle"><span class="type-signature">(async) </span>navPanelToggle<span class="signature">(collapse<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line164">line 164</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Expand or collapse the navigation panel.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>collapse</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Force the desired collapse state.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
     <h4 class="name" id="removeEventListener"><span class="type-signature"></span>removeEventListener<span class="signature">(event, callback)</span><span class="type-signature"></span></h4>
 
     
@@ -547,7 +625,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line128">line 128</a>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line150">line 150</a>
     </li></ul></dd>
     
 
@@ -665,6 +743,280 @@
             
 
             <td class="description last"><p>Callback function used with <code>addEventListener</code>.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="threadOpen"><span class="type-signature">(async) </span>threadOpen<span class="signature">(id)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line184">line 184</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Open a thread by its <code>ID</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The thread ID to open.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="threadStartWithExpression"><span class="type-signature">(async) </span>threadStartWithExpression<span class="signature">(expression)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line175">line 175</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Select or create a conversation thread.  If the tag <code>expression</code> argument matches an
+existing thread it will be opened, otherwise a new thread will be created.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>expression</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The <code>TagExpression</code> for the desired thread's
+distribution.</p></td>
         </tr>
 
     

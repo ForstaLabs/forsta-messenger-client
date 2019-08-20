@@ -13,10 +13,19 @@
                     callback: onLoaded,
                     url: 'http://localhost:1080/@'
                 });
+
+                client.addEventListener('thread-message', x => console.warn("thread-message:", x));
+
+                document.getElementById('toggle-nav-panel').addEventListener('click', async () => {
+                    await client.navPanelToggle();
+                });
             });
         </script>
     </head>
     <body>
-        <div id="client" style="width: 80%; height: 80%;"></div>
+        <div id="client" style="height: 60%; margin: 1em;"></div>
+        <div style="background: black; color: white; padding: 1em; margin: 1em;">
+            <button id="toggle-nav-panel">Toggle Nav</button>
+        </div>
     </body>
 </html>

@@ -214,8 +214,7 @@ forsta.messenger = forsta.messenger || {};
      * The Forsta messenger client class.
      *
      * @memberof forsta.messenger
-     * @fires thread-message 
-     * @fires thread-message 
+     * @fires thread-message
      *
      * @example
      * const client = new forsta.messenger.Client(document.querySelector('#myDivId'),

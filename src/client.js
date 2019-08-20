@@ -16,16 +16,28 @@ forsta.messenger = forsta.messenger || {};
 (function() {
     'use strict';
 
+
     /**
      * The Forsta messenger client class.
      *
      * @memberof forsta.messenger
+     * @fires thread-message 
+     * @fires thread-message 
      *
      * @example
      * const client = new forsta.messenger.Client(document.querySelector('#myDivId'),
      *                                            {orgEphemeralToken: 'secret'});
      */
     forsta.messenger.Client = class Client {
+
+        /**
+         * Thread message event.  Triggered when a new message is added, either by sending
+         * or receiving a message.
+         *
+         * @event thread-message
+         * @type {object}
+         * @property {string} id - The message id.
+         */
 
         /**
          * Auth is a single value union.  Only ONE property should be set.
@@ -80,9 +92,6 @@ forsta.messenger = forsta.messenger || {};
             this.auth = auth;
             this.options = options || {};
             this.callback = options.callback;
-
-            /** @member {forsta.messenger.NavController} - The navigation controller */
-            this.nav = new forsta.messenger.NavController(this);
             this._iframe = document.createElement('iframe');
             this._iframe.style.border = '0 solid transparent';
             this._iframe.style.width = '100%';
@@ -104,6 +113,12 @@ forsta.messenger = forsta.messenger || {};
                 showThreadAside: !!this.options.showThreadAside,
                 showThreadHeader: !!this.options.showThreadHeader,
             });
+            if (this._rpcEarlyEvents) {
+                for (const x of this._rpcEarlyEvents) {
+                    this._rpc.addEventListener(x.event, x.callback);
+                }
+                delete this._rpcEarlyEvents;
+            }
             if (this.callback) {
                 await this.callback(this);
             }
@@ -116,7 +131,14 @@ forsta.messenger = forsta.messenger || {};
          * @param {Function} callback - Callback function to invoke.
          */
         addEventListener(event, callback) {
-            this._rpc.addEventListener(event, callback);
+            if (!this._rpc) {
+                if (!this._rpcEarlyEvents) {
+                    this._rpcEarlyEvents = [];
+                }
+                this._rpcEarlyEvents.push({event, callback});
+            } else {
+                this._rpc.addEventListener(event, callback);
+            }
         }
 
         /**
@@ -126,7 +148,41 @@ forsta.messenger = forsta.messenger || {};
          * @param {Function} callback - Callback function used with {@link addEventListener}.
          */
         removeEventListener(event, callback) {
-            this._rpc.removeEventListener(event, callback);
+            if (!this._rpc) {
+                this._rpcEarlyEvents = this._rpcEarlyEvents.filter(x =>
+                    !(x.event === event && x.callback === callback));
+            } else {
+                this._rpc.removeEventListener(event, callback);
+            }
+        }
+
+        /**
+         * Expand or collapse the navigation panel.
+         *
+         * @param {bool} [collapse] - Force the desired collapse state.
+         */
+        async navPanelToggle(collapse) {
+            return await this._rpc.invokeCommand('nav-panel-toggle', collapse);
+        }
+
+        /**
+         * Select or create a conversation thread.  If the tag `expression` argument matches an
+         * existing thread it will be opened, otherwise a new thread will be created.
+         *
+         * @param {string} expression - The {@link TagExpression} for the desired thread's
+         *                              distribution.
+         */
+        async threadStartWithExpression(expression) {
+            return await this._rpc.invokeCommand('thread-join', expression);
+        }
+
+        /**
+         * Open a thread by its `ID`.
+         *
+         * @param {string} id - The thread ID to open.
+         */
+        async threadOpen(id) {
+            return await this._rpc.invokeCommand('thread-open', id);
         }
     };
 })();

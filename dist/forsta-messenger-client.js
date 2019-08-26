@@ -285,9 +285,11 @@ forsta.messenger = forsta.messenger || {};
             this.options = options || {};
             this.callback = options.callback;
             this._iframe = document.createElement('iframe');
-            this._iframe.style.border = '0 solid transparent';
+            this._iframe.style.border = 'none';
             this._iframe.style.width = '100%';
             this._iframe.style.height = '100%';
+            this._iframe.setAttribute('allow', 'camera; microphone; fullscreen; autoplay; display-capture; geolocation; speaker; vibrate;');
+            this._iframe.setAttribute('allowfullscreen', 'true');
             this._iframe.addEventListener('load', () => {
                 this._rpc = ifrpc.init(this._iframe.contentWindow);
                 this._rpc.addEventListener('init', this._onClientInit.bind(this));

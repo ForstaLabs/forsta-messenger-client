@@ -283,7 +283,7 @@ forsta.messenger = forsta.messenger || {};
             }
             this.auth = auth;
             this.options = options || {};
-            this.callback = options.callback;
+            this.callback = this.options.callback;
             this._iframe = document.createElement('iframe');
             this._iframe.style.border = 'none';
             this._iframe.style.width = '100%';
@@ -294,7 +294,7 @@ forsta.messenger = forsta.messenger || {};
                 this._rpc = ifrpc.init(this._iframe.contentWindow);
                 this._rpc.addEventListener('init', this._onClientInit.bind(this));
             });
-            const url = options.url || 'https://app.forsta.io/@';
+            const url = this.options.url || 'https://app.forsta.io/@';
             this._iframe.setAttribute('src', `${url}?managed`);
             el.appendChild(this._iframe);
         }

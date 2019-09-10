@@ -2,17 +2,19 @@
     <head>
         <script src="../../dist/forsta-messenger-client.js"></script>
         <script>
-            function onLoaded(client) {
-                console.warn("It loaded:", client);
+            function onInit(client) {
+                console.warn("It initialized:", client);
+            }
+
+            async function onLoaded(client) {
+                console.warn("It laoded:", client);
+                await client.threadStartWithExpression('@jeb');
             }
 
             addEventListener('load', () => {
                 const client = new forsta.messenger.Client(document.querySelector('#client'),
                                                            {orgEphemeralToken: 'TESTING'},
-                {
-                    callback: onLoaded,
-                    url: 'http://localhost:1080/@'
-                });
+                                                           {onInit, onLoaded, url: 'http://localhost:1080/@'});
 
                 client.addEventListener('thread-message', x => console.warn("thread-message:", x));
 

@@ -64,7 +64,8 @@ forsta.messenger = forsta.messenger || {};
 
         /**
          * @typedef {Object} ClientOptions
-         * @property {Function} [callback] - Callback to run when client is loaded.
+         * @property {Function} [onInit] - Callback to run when client is first initialized.
+         * @property {Function} [onLoaded] - Callback to run when client is fully loaded and ready to use.
          * @property {string} [url=https://app.forsta.io/@] - Override the default site url.
          * @property {bool} showNav - Unhide the navigation panel used for thread selection.
          * @property {bool} showHeader - Unhide the header panel.
@@ -90,7 +91,8 @@ forsta.messenger = forsta.messenger || {};
             }
             this.auth = auth;
             this.options = options || {};
-            this.callback = this.options.callback;
+            this.onInit = this.options.onInit;
+            this.onLoaded = this.options.onLoaded;
             this._iframe = document.createElement('iframe');
             this._iframe.style.border = 'none';
             this._iframe.style.width = '100%';
@@ -101,6 +103,9 @@ forsta.messenger = forsta.messenger || {};
             this._iframe.addEventListener('load', () => {
                 this._rpc = ifrpc.init(this._iframe.contentWindow);
                 this._rpc.addEventListener('init', this._onClientInit.bind(this));
+                if (this.onLoaded) {
+                    this._rpc.addEventListener('loaded', () => this.onLoaded(this));
+                }
             });
             const url = this.options.url || 'https://app.forsta.io/@';
             this._iframe.setAttribute('src', `${url}?managed`);
@@ -122,8 +127,8 @@ forsta.messenger = forsta.messenger || {};
                 }
                 delete this._rpcEarlyEvents;
             }
-            if (this.callback) {
-                await this.callback(this);
+            if (this.onInit) {
+                await this.onInit(this);
             }
         }
 

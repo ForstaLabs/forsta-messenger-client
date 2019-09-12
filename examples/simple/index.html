@@ -7,8 +7,8 @@
             }
 
             async function onLoaded(client) {
-                console.warn("It laoded:", client);
-                await client.threadStartWithExpression('@jeb');
+                console.warn("It loaded:", client);
+                await client.threadSetExpiration('@jeb');
             }
 
             addEventListener('load', () => {
@@ -21,6 +21,7 @@
                 document.getElementById('toggle-nav-panel').addEventListener('click', async () => {
                     await client.navPanelToggle();
                 });
+                window.forsta = client;
             });
         </script>
     </head>

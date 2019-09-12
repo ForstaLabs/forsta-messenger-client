@@ -27,7 +27,7 @@
 
 <nav >
     
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="forsta.messenger.Client.html">Client</a><ul class='methods'><li data-type='method'><a href="forsta.messenger.Client.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#navPanelToggle">navPanelToggle</a></li><li data-type='method'><a href="forsta.messenger.Client.html#removeEventListener">removeEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadOpen">threadOpen</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadStartWithExpression">threadStartWithExpression</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="global.html#event:thread-message">thread-message</a></li></ul><h3>Namespaces</h3><ul><li><a href="forsta.html">forsta</a></li><li><a href="forsta.messenger.html">messenger</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Hello World.html">Hello World</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="forsta.messenger.Client.html">Client</a><ul class='methods'><li data-type='method'><a href="forsta.messenger.Client.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#navPanelToggle">navPanelToggle</a></li><li data-type='method'><a href="forsta.messenger.Client.html#removeEventListener">removeEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadGetAttribute">threadGetAttribute</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadList">threadList</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadListAttributes">threadListAttributes</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadOpen">threadOpen</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadSetAttribute">threadSetAttribute</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadSetExpiration">threadSetExpiration</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadStartWithExpression">threadStartWithExpression</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="global.html#event:thread-message">thread-message</a></li></ul><h3>Namespaces</h3><ul><li><a href="forsta.html">forsta</a></li><li><a href="forsta.messenger.html">messenger</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Hello World.html">Hello World</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <div id="main">
@@ -770,6 +770,460 @@
 
     
 
+    <h4 class="name" id="threadGetAttribute"><span class="type-signature">(async) </span>threadGetAttribute<span class="signature">(id, attr)</span><span class="type-signature"> &rarr; {*}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line236">line 236</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Get the value of a thread attribute.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The thread ID to update.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>attr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The thread attribute to get.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>The value of the thread attribute.</li>
+</ul>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">*</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="threadList"><span class="type-signature">(async) </span>threadList<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line215">line 215</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>List threads known to this client.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>List of thread IDs.</li>
+</ul>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;string></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="threadListAttributes"><span class="type-signature">(async) </span>threadListAttributes<span class="signature">(id)</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line225">line 225</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>List the attributes of a thread.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The thread ID to update.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>List of thread attibutes.</li>
+</ul>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;string></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
     <h4 class="name" id="threadOpen"><span class="type-signature">(async) </span>threadOpen<span class="signature">(id)</span><span class="type-signature"></span></h4>
 
     
@@ -782,7 +1236,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line192">line 192</a>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line193">line 193</a>
     </li></ul></dd>
     
 
@@ -906,7 +1360,7 @@
 
     
 
-    <h4 class="name" id="threadStartWithExpression"><span class="type-signature">(async) </span>threadStartWithExpression<span class="signature">(expression)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="threadSetAttribute"><span class="type-signature">(async) </span>threadSetAttribute<span class="signature">(id, attr, value)</span><span class="type-signature"></span></h4>
 
     
 
@@ -918,7 +1372,351 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line183">line 183</a>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line247">line 247</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Set the value of a thread attribute.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The thread ID to update.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>attr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The thread attribute to update.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value to set.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="threadSetExpiration"><span class="type-signature">(async) </span>threadSetExpiration<span class="signature">(id, expiration)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line206">line 206</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Set the expiration time for messages in a thread.  When this value is set to a non-zero
+value, messages will expire from the thread after they are read.  Set this value to <code>0</code>
+to disable the expiration behavior.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The thread ID to update.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>expiration</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Expiration time in seconds.  The expiration timer starts
+when the message is read by the recipient.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="threadStartWithExpression"><span class="type-signature">(async) </span>threadStartWithExpression<span class="signature">(expression)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line184">line 184</a>
     </li></ul></dd>
     
 
@@ -1036,6 +1834,28 @@ distribution.</p></td>
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The threadId that was opened.</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 

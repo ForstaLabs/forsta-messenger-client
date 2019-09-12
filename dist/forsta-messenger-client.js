@@ -363,7 +363,7 @@ forsta.messenger = forsta.messenger || {};
          * @param {bool} [collapse] - Force the desired collapse state.
          */
         async navPanelToggle(collapse) {
-            return await this._rpc.invokeCommand('nav-panel-toggle', collapse);
+            await this._rpc.invokeCommand('nav-panel-toggle', collapse);
         }
 
         /**
@@ -372,6 +372,7 @@ forsta.messenger = forsta.messenger || {};
          *
          * @param {string} expression - The {@link TagExpression} for the desired thread's
          *                              distribution.
+         * @returns {string} The threadId that was opened.
          */
         async threadStartWithExpression(expression) {
             return await this._rpc.invokeCommand('thread-join', expression);
@@ -383,7 +384,61 @@ forsta.messenger = forsta.messenger || {};
          * @param {string} id - The thread ID to open.
          */
         async threadOpen(id) {
-            return await this._rpc.invokeCommand('thread-open', id);
+            await this._rpc.invokeCommand('thread-open', id);
+        }
+
+        /**
+         * Set the expiration time for messages in a thread.  When this value is set to a non-zero
+         * value, messages will expire from the thread after they are read.  Set this value to `0`
+         * to disable the expiration behavior.
+         *
+         * @param {string} id - The thread ID to update.
+         * @param {number} expiration - Expiration time in seconds.  The expiration timer starts
+         * when the message is read by the recipient.
+         */
+        async threadSetExpiration(id, expiration) {
+            await this._rpc.invokeCommand('thread-set-expiration', id, expiration);
+        }
+
+        /**
+         * List threads known to this client.
+         *
+         * @returns {string[]} - List of thread IDs.
+         */
+        async threadList() {
+            return await this._rpc.invokeCommand('thread-list');
+        }
+
+        /**
+         * List the attributes of a thread.
+         *
+         * @param {string} id - The thread ID to update.
+         * @returns {string[]} - List of thread attibutes.
+         */
+        async threadListAttributes(threadId) {
+            return await this._rpc.invokeCommand('thread-list-attributes', threadId);
+        }
+
+        /**
+         * Get the value of a thread attribute.
+         *
+         * @param {string} id - The thread ID to update.
+         * @param {string} attr - The thread attribute to get.
+         * @returns {*} - The value of the thread attribute.
+         */
+        async threadGetAttribute(threadId, attr) {
+            return await this._rpc.invokeCommand('thread-get-attribute', threadId, attr);
+        }
+
+        /**
+         * Set the value of a thread attribute.
+         *
+         * @param {string} id - The thread ID to update.
+         * @param {string} attr - The thread attribute to update.
+         * @param {*} value - The value to set.
+         */
+        async threadSetAttribute(threadId, attr, value) {
+            return await this._rpc.invokeCommand('thread-set-attribute', threadId, attr, value);
         }
     };
 })();

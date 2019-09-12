@@ -27,7 +27,7 @@
 
 <nav >
     
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="forsta.messenger.Client.html">Client</a><ul class='methods'><li data-type='method'><a href="forsta.messenger.Client.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#navPanelToggle">navPanelToggle</a></li><li data-type='method'><a href="forsta.messenger.Client.html#removeEventListener">removeEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadOpen">threadOpen</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadStartWithExpression">threadStartWithExpression</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="global.html#event:thread-message">thread-message</a></li></ul><h3>Namespaces</h3><ul><li><a href="forsta.html">forsta</a></li><li><a href="forsta.messenger.html">messenger</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Hello World.html">Hello World</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="forsta.messenger.Client.html">Client</a><ul class='methods'><li data-type='method'><a href="forsta.messenger.Client.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#navPanelToggle">navPanelToggle</a></li><li data-type='method'><a href="forsta.messenger.Client.html#removeEventListener">removeEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadGetAttribute">threadGetAttribute</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadList">threadList</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadListAttributes">threadListAttributes</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadOpen">threadOpen</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadSetAttribute">threadSetAttribute</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadSetExpiration">threadSetExpiration</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadStartWithExpression">threadStartWithExpression</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="global.html#event:thread-message">thread-message</a></li></ul><h3>Namespaces</h3><ul><li><a href="forsta.html">forsta</a></li><li><a href="forsta.messenger.html">messenger</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Hello World.html">Hello World</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <div id="main">
@@ -214,7 +214,7 @@ forsta.messenger = forsta.messenger || {};
          * @param {bool} [collapse] - Force the desired collapse state.
          */
         async navPanelToggle(collapse) {
-            return await this._rpc.invokeCommand('nav-panel-toggle', collapse);
+            await this._rpc.invokeCommand('nav-panel-toggle', collapse);
         }
 
         /**
@@ -223,6 +223,7 @@ forsta.messenger = forsta.messenger || {};
          *
          * @param {string} expression - The {@link TagExpression} for the desired thread's
          *                              distribution.
+         * @returns {string} The threadId that was opened.
          */
         async threadStartWithExpression(expression) {
             return await this._rpc.invokeCommand('thread-join', expression);
@@ -234,7 +235,61 @@ forsta.messenger = forsta.messenger || {};
          * @param {string} id - The thread ID to open.
          */
         async threadOpen(id) {
-            return await this._rpc.invokeCommand('thread-open', id);
+            await this._rpc.invokeCommand('thread-open', id);
+        }
+
+        /**
+         * Set the expiration time for messages in a thread.  When this value is set to a non-zero
+         * value, messages will expire from the thread after they are read.  Set this value to `0`
+         * to disable the expiration behavior.
+         *
+         * @param {string} id - The thread ID to update.
+         * @param {number} expiration - Expiration time in seconds.  The expiration timer starts
+         * when the message is read by the recipient.
+         */
+        async threadSetExpiration(id, expiration) {
+            await this._rpc.invokeCommand('thread-set-expiration', id, expiration);
+        }
+
+        /**
+         * List threads known to this client.
+         *
+         * @returns {string[]} - List of thread IDs.
+         */
+        async threadList() {
+            return await this._rpc.invokeCommand('thread-list');
+        }
+
+        /**
+         * List the attributes of a thread.
+         *
+         * @param {string} id - The thread ID to update.
+         * @returns {string[]} - List of thread attibutes.
+         */
+        async threadListAttributes(threadId) {
+            return await this._rpc.invokeCommand('thread-list-attributes', threadId);
+        }
+
+        /**
+         * Get the value of a thread attribute.
+         *
+         * @param {string} id - The thread ID to update.
+         * @param {string} attr - The thread attribute to get.
+         * @returns {*} - The value of the thread attribute.
+         */
+        async threadGetAttribute(threadId, attr) {
+            return await this._rpc.invokeCommand('thread-get-attribute', threadId, attr);
+        }
+
+        /**
+         * Set the value of a thread attribute.
+         *
+         * @param {string} id - The thread ID to update.
+         * @param {string} attr - The thread attribute to update.
+         * @param {*} value - The value to set.
+         */
+        async threadSetAttribute(threadId, attr, value) {
+            return await this._rpc.invokeCommand('thread-set-attribute', threadId, attr, value);
         }
     };
 })();

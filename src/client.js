@@ -21,7 +21,12 @@ forsta.messenger = forsta.messenger || {};
      * The Forsta messenger client class.
      *
      * @memberof forsta.messenger
+     * @fires init
+     * @fires loaded
      * @fires thread-message
+     * @fires provisioningrequired
+     * @fires provisioningerror
+     * @fires provisioningdone
      *
      * @example
      * const client = new forsta.messenger.Client(document.querySelector('#myDivId'),
@@ -30,8 +35,47 @@ forsta.messenger = forsta.messenger || {};
     forsta.messenger.Client = class Client {
 
         /**
-         * Thread message event.  Triggered when a new message is added, either by sending
-         * or receiving a message.
+         * The client application has been initialized.  This is emitted shortly after successfully
+         * starting up, but before the messenger is fully loaded.  Use the `loaded` event to wait
+         * for the client application to be completely available.
+         *
+         * @event init
+         * @type {object}
+         */
+
+        /**
+         * The client application is fully loaded and ready to be controlled.
+         *
+         * @event loaded
+         * @type {object}
+         */
+
+        /**
+         * This event is emitted if the application requires the user to perform provisioning of
+         * their Identity Key.
+         *
+         * @event provisioningrequired
+         * @type {object}
+         */
+
+        /**
+         * If an error occurs during provisioning it will be emitted using this event.
+         *
+         * @event provisioningerror
+         * @type {object}
+         * @property {Error} error - The error object.
+         */
+
+        /**
+         * When provisioning has finished successfully this event is emitted.
+         *
+         * @event provisioningdone
+         * @type {object}
+         */
+
+        /**
+         * Thread message event.  Emitted when a new message is added, either by sending
+         * or receiving.
          *
          * @event thread-message
          * @type {object}

@@ -27,7 +27,7 @@
 
 <nav >
     
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="forsta.messenger.Client.html">Client</a><ul class='methods'><li data-type='method'><a href="forsta.messenger.Client.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#navPanelToggle">navPanelToggle</a></li><li data-type='method'><a href="forsta.messenger.Client.html#removeEventListener">removeEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadGetAttribute">threadGetAttribute</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadList">threadList</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadListAttributes">threadListAttributes</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadOpen">threadOpen</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadSetAttribute">threadSetAttribute</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadSetExpiration">threadSetExpiration</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadStartWithExpression">threadStartWithExpression</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="global.html#event:thread-message">thread-message</a></li></ul><h3>Namespaces</h3><ul><li><a href="forsta.html">forsta</a></li><li><a href="forsta.messenger.html">messenger</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Hello World.html">Hello World</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="forsta.messenger.Client.html">Client</a><ul class='methods'><li data-type='method'><a href="forsta.messenger.Client.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#navPanelToggle">navPanelToggle</a></li><li data-type='method'><a href="forsta.messenger.Client.html#removeEventListener">removeEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadGetAttribute">threadGetAttribute</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadList">threadList</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadListAttributes">threadListAttributes</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadOpen">threadOpen</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadSetAttribute">threadSetAttribute</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadSetExpiration">threadSetExpiration</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadStartWithExpression">threadStartWithExpression</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="global.html#event:init">init</a></li><li><a href="global.html#event:loaded">loaded</a></li><li><a href="global.html#event:provisioningdone">provisioningdone</a></li><li><a href="global.html#event:provisioningerror">provisioningerror</a></li><li><a href="global.html#event:provisioningrequired">provisioningrequired</a></li><li><a href="global.html#event:thread-message">thread-message</a></li></ul><h3>Namespaces</h3><ul><li><a href="forsta.html">forsta</a></li><li><a href="forsta.messenger.html">messenger</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Hello World.html">Hello World</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <div id="main">
@@ -134,7 +134,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line41">line 41</a>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line85">line 85</a>
     </li></ul></dd>
     
 
@@ -303,7 +303,7 @@ event to handle updates made during extended use.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line65">line 65</a>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line109">line 109</a>
     </li></ul></dd>
     
 
@@ -678,7 +678,7 @@ Only relevant when orgEphemeralToken auth is used.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line53">line 53</a>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line97">line 97</a>
     </li></ul></dd>
     
 
@@ -935,6 +935,546 @@ Only relevant when orgEphemeralToken auth is used.</p></td>
 
     
 
+    <h4 class="name" id="event:init">init</h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line37">line 37</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The client application has been initialized.  This is emitted shortly after successfully
+starting up, but before the messenger is fully loaded.  Use the <code>loaded</code> event to wait
+for the client application to be completely available.</p>
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="event:loaded">loaded</h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line46">line 46</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>The client application is fully loaded and ready to be controlled.</p>
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="event:provisioningdone">provisioningdone</h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line69">line 69</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>When provisioning has finished successfully this event is emitted.</p>
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="event:provisioningerror">provisioningerror</h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line61">line 61</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Error</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The error object.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description">
+    <p>If an error occurs during provisioning it will be emitted using this event.</p>
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="event:provisioningrequired">provisioningrequired</h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line53">line 53</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>This event is emitted if the application requires the user to perform provisioning of
+their Identity Key.</p>
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
     <h4 class="name" id="event:thread-message">thread-message</h4>
 
     
@@ -947,7 +1487,7 @@ Only relevant when orgEphemeralToken auth is used.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line32">line 32</a>
+        <a href="client.js.html">client.js</a>, <a href="client.js.html#line76">line 76</a>
     </li></ul></dd>
     
 
@@ -1039,8 +1579,8 @@ Only relevant when orgEphemeralToken auth is used.</p></td>
 
 
 <div class="description">
-    <p>Thread message event.  Triggered when a new message is added, either by sending
-or receiving a message.</p>
+    <p>Thread message event.  Emitted when a new message is added, either by sending
+or receiving.</p>
 </div>
 
 

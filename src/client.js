@@ -80,6 +80,7 @@ forsta.messenger = forsta.messenger || {};
          * @event thread-message
          * @type {object}
          * @property {string} id - The message id.
+         * @property {string} threadId - The id of the thread this message belongs to.
          */
 
         /**

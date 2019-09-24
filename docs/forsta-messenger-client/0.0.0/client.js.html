@@ -162,6 +162,9 @@ forsta.messenger = forsta.messenger || {};
          * @property {bool} showThreadHeader - Unhide the thread header panel.
          * @property {EphemeralUserInfo} ephemeralUserInfo - Details about the ephemeral user to be created or used.
          *                                                   Only relevant when orgEphemeralToken auth is used.
+         * @property {null|string} openThreadId - Force the messenger to open a specific thread on
+         *                                        startup.  If the value is `null` it will force
+         *                                        the messenger to not open any thread.
          */
 
 
@@ -209,6 +212,7 @@ forsta.messenger = forsta.messenger || {};
                 showThreadAside: !!this.options.showThreadAside,
                 showThreadHeader: !!this.options.showThreadHeader,
                 ephemeralUser: this.options.ephemeralUserInfo,
+                openThreadId: this.options.openThreadId,
             });
             if (this._rpcEarlyEvents) {
                 for (const x of this._rpcEarlyEvents) {

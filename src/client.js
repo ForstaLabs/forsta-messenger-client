@@ -1,21 +1,18 @@
 // vim: ts=4:sw=4:expandtab
 /* global forsta, ifrpc */
 
-
-/**
- * @namespace forsta
- */
-self.forsta = self.forsta || {};
-
-/**
- * @namespace forsta.messenger
- */
-forsta.messenger = forsta.messenger || {};
-
-
 (function() {
     'use strict';
 
+    /**
+     * @namespace forsta
+     */
+    self.forsta = self.forsta || {};
+
+    /**
+     * @namespace forsta.messenger
+     */
+    const ns = forsta.messenger = forsta.messenger || {};
 
     /**
      * The Forsta messenger client class.
@@ -150,6 +147,7 @@ forsta.messenger = forsta.messenger || {};
             this._iframe.setAttribute('allowfullscreen', 'true');
             this._iframe.addEventListener('load', () => {
                 this._rpc = ifrpc.init(this._iframe.contentWindow);
+                this._idbGateway = new ns.IDBGateway(this._rpc);
                 this._rpc.addEventListener('init', this._onClientInit.bind(this));
                 if (this.onLoaded) {
                     this._rpc.addEventListener('loaded', () => this.onLoaded(this));

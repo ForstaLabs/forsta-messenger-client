@@ -6,15 +6,7 @@
     'use strict';
 
     self.forsta = self.forsta || {};
-    const ns = forsta.messenger = forsta.messenger || {};
-
-    class NotFound extends ReferenceError {
-        constructor(key) {
-            super('Not Found');
-            this.name = 'NotFound';
-            this.key = key;
-        }
-    }
+    forsta.messenger = forsta.messenger || {};
 
     const schemas = {
         "User": {
@@ -266,6 +258,7 @@
                 };
             });
             this._rpc.addCommandHandler(`db-gateway-read-${this.id}`, this.onReadHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-update-${this.id}`, this.onUpdateHandler.bind(this));
         }
 
         async migrate(transaction, fromVersion, toVersion) {
@@ -337,31 +330,27 @@
             }
         }
 
-        update(storeName, model, options) {
-            if (this.schema.readonly) {
-                throw new Error("Database is readonly");
-            }
-            //assertModel(model);
-            const writeTransaction = this.db.transaction([storeName], 'readwrite');
-            const store = writeTransaction.objectStore(storeName);
-            const json = model.toJSON();
-            const idAttribute = _.result(model, 'idAttribute');
-            let writeRequest;
-            if (!json[idAttribute]) {
-                json[idAttribute] = F.util.uuid4();
-            }
+        async onUpdateHandler(kwargs) {
+            const tx = this.db.transaction([kwargs.storeName], 'readwrite');
+            const store = tx.objectStore(kwargs.storeName);
+            const txDone = new Promise((resolve, reject) => {
+                tx.oncomplete = ev => resolve();
+                tx.onerror = ev => reject(new Error("Unexpected update error"));
+            });
             if (!store.keyPath) {
-                writeRequest = store.put(json, json[idAttribute]);
+                store.put(kwargs.json, kwargs.json[kwargs.idAttribute]);
             } else {
-                writeRequest = store.put(json);
+                store.put(kwargs.json);
             }
-            writeRequest.onerror = e => options.error(e);
-            writeTransaction.oncomplete = () => options.success(json);
+            if (tx.commit) {
+                tx.commit();
+            }
+            await txDone;
         }
 
         async onReadHandler(kwargs) {
-            const readTransaction = this.db.transaction([kwargs.storeName], "readonly");
-            const store = readTransaction.objectStore(kwargs.storeName);
+            const tx = this.db.transaction([kwargs.storeName], "readonly");
+            const store = tx.objectStore(kwargs.storeName);
             const json = kwargs.json;
             const idAttribute = kwargs.idAttribute;
             let getRequest;
@@ -413,6 +402,7 @@
 
         // Deletes the json.id key and value in storeName from db.
         delete(storeName, model, options) {
+            // XXX PORT
             if (this.schema.readonly) {
                 throw new Error("Database is readonly");
             }
@@ -427,6 +417,7 @@
         }
 
         clear(storeName, options) {
+            // XXX PORT
             if (this.schema.readonly) {
                 throw new Error("Database is readonly");
             }
@@ -444,6 +435,7 @@
         // - limit : max number of elements to be yielded
         // - offset : skipped items.
         query(storeName, collection, options) {
+            // XXX PORT
             //assertCollection(collection);
             const elements = [];
             let skipped = 0;
@@ -607,104 +599,12 @@
         }
 
         close() {
+            // XXX PORT
             if(this.db){
                 this.db.close();
             }
         }
     }
-
-
-    class IDBInterface {
-        constructor(schema) {
-            this.started = false;
-            this.failed = false;
-            this.stack = [];
-            this.version = _.last(schema.migrations).version;
-            this.driver = new IDBDriver(schema, this.ready.bind(this), this.error.bind(this));
-        }
-
-        ready() {
-            this.started = true;
-            for (const args of this.stack) {
-                this.execute.apply(this, args);
-            }
-            this.stack = null;
-            const readyEvent = new Event('dbready');
-            readyEvent.db = this.driver.db;
-            self.dispatchEvent(readyEvent);
-        }
-
-        error() {
-            this.failed = true;
-            for (const args of this.stack) {
-                this.execute.apply(this, args);
-            }
-            this.stack = null;
-        }
-
-        execute(method, storable, options) {
-            const storeName = options.storeName || storable.storeName;
-            if (this.started) {
-                this.driver.execute(storeName, method, storable, options);
-            } else if (this.failed) {
-                options.error(this.driver.error);
-            } else {
-                this.stack.push([method, storable, options]);
-            }
-        }
-
-        close(){
-            this.driver.close();
-        }
-    }
-    
-    const idbs = new Map();
-
-    // Method used by Backbone for sync of data with data store. It was initially
-    // designed to work with "server side" APIs, This wrapper makes it work with
-    // IndexedDB. It uses the schema attribute provided by the storable.
-    // The wrapper keeps an active Executuon Queue for each "schema", and
-    // executes querues agains it, based on the storable type (collection or single
-    // model), but also the method... etc.
-    async function syncIDB(method, storable, options) {
-        options = options || {};
-        if (method === "closeall"){
-            throw new Error("Unexpected method passed to sync");
-            for (const q of idbs.values()) {
-                q.close();
-            }
-            idbs.clear();
-            return;
-        }
-        return await new Promise((resolve, reject) => {
-            const optionedSuccessCallback = options.success;
-            options.success = (resp, silenced) => {
-                try {
-                    if (!silenced && optionedSuccessCallback) {
-                        optionedSuccessCallback(resp);
-                    }
-                } finally {
-                    resolve(resp);
-                }
-            };
-            const optionedErrorCallback = options.error;
-            options.error = e => {
-                try {
-                    if (optionedErrorCallback) {
-                        optionedErrorCallback(e);
-                    }
-                } finally {
-                    reject(e);
-                }
-            };
-            const schema = storable.database;
-            if (!idbs.has(schema.id)) {
-                idbs.set(schema.id, new IDBInterface(schema));
-            }
-            idbs.get(schema.id).execute(method, storable, options);
-        });
-    }
-
 
     forsta.messenger.IDBGateway = class IDBGateway {
         constructor(rpc) {
@@ -723,5 +623,5 @@
                 this._initialized.set(name, driver);
             }
         }
-    }
+    };
 })();

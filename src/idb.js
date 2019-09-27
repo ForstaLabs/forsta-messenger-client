@@ -259,6 +259,7 @@
             });
             this._rpc.addCommandHandler(`db-gateway-read-${this.id}`, this.onReadHandler.bind(this));
             this._rpc.addCommandHandler(`db-gateway-update-${this.id}`, this.onUpdateHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-query-${this.id}`, this.onQueryHandler.bind(this));
         }
 
         async migrate(transaction, fromVersion, toVersion) {
@@ -351,12 +352,10 @@
         async onReadHandler(kwargs) {
             const tx = this.db.transaction([kwargs.storeName], "readonly");
             const store = tx.objectStore(kwargs.storeName);
-            const json = kwargs.json;
-            const idAttribute = kwargs.idAttribute;
             let getRequest;
             let keyIdent;
-            if (json[idAttribute]) {
-                keyIdent = json[idAttribute];
+            if (kwargs.json[kwargs.idAttribute]) {
+                keyIdent = kwargs.json[kwargs.idAttribute];
                 getRequest = store.get(keyIdent);
             } else if (kwargs.index) {
                 const index = store.index(kwargs.index.name);
@@ -371,8 +370,8 @@
                     const index = store.index(key);
                     if (typeof index.keyPath === 'string' && 1 > cardinality) {
                         // simple index
-                        if (json[index.keyPath] !== undefined) {
-                            keyIdent = json[index.keyPath];
+                        if (kwargs.json[index.keyPath] !== undefined) {
+                            keyIdent = kwargs.json[index.keyPath];
                             getRequest = index.get(keyIdent);
                             cardinality = 1;
                         }
@@ -380,8 +379,8 @@
                         // compound index
                         let valid = true;
                         const keyValue = _.map(index.keyPath, keyPart => {
-                            valid = valid && json[keyPart] !== undefined;
-                            return json[keyPart];
+                            valid = valid && kwargs.json[keyPart] !== undefined;
+                            return kwargs.json[keyPart];
                         });
                         if (valid) {
                             keyIdent = keyValue;
@@ -434,79 +433,76 @@
         // - range : range for the primary key
         // - limit : max number of elements to be yielded
         // - offset : skipped items.
-        query(storeName, collection, options) {
-            // XXX PORT
-            //assertCollection(collection);
+        async onQueryHandler(kwargs) {
             const elements = [];
             let skipped = 0;
             let processed = 0;
-            const queryTransaction = this.db.transaction([storeName], "readonly");
-            const idAttribute = collection.idAttribute || _.result(collection.model.prototype, 'idAttribute');
-            const store = queryTransaction.objectStore(storeName);
+            const tx = this.db.transaction([kwargs.storeName], "readonly");
+            const store = tx.objectStore(kwargs.storeName);
 
             let readCursor;
             let bounds;
             let index;
-            if (options.conditions) {
+            if (kwargs.conditions) {
                 // We have a condition, we need to use it for the cursor
-                _.each(store.indexNames, key => {
+                for (const key of store.indexNames) {
                     if (!readCursor) {
                         index = store.index(key);
-                        if (options.conditions[index.keyPath] instanceof Array) {
-                            const lower = options.conditions[index.keyPath][0] > options.conditions[index.keyPath][1] ?
-                                          options.conditions[index.keyPath][1] :
-                                          options.conditions[index.keyPath][0];
-                            const upper = options.conditions[index.keyPath][0] > options.conditions[index.keyPath][1] ?
-                                          options.conditions[index.keyPath][0] :
-                                          options.conditions[index.keyPath][1];
+                        if (kwargs.conditions[index.keyPath] instanceof Array) {
+                            const lower = kwargs.conditions[index.keyPath][0] > kwargs.conditions[index.keyPath][1] ?
+                                          kwargs.conditions[index.keyPath][1] :
+                                          kwargs.conditions[index.keyPath][0];
+                            const upper = kwargs.conditions[index.keyPath][0] > kwargs.conditions[index.keyPath][1] ?
+                                          kwargs.conditions[index.keyPath][0] :
+                                          kwargs.conditions[index.keyPath][1];
                             bounds = IDBKeyRange.bound(lower, upper, true, true);
-                            if (options.conditions[index.keyPath][0] > options.conditions[index.keyPath][1]) {
+                            if (kwargs.conditions[index.keyPath][0] > kwargs.conditions[index.keyPath][1]) {
                                 // Looks like we want the DESC order
                                 readCursor = index.openCursor(bounds, IDBCursor.PREV || "prev");
                             } else {
                                 // We want ASC order
                                 readCursor = index.openCursor(bounds, IDBCursor.NEXT || "next");
                             }
-                        } else if (typeof options.conditions[index.keyPath] === 'object' &&
-                                   ('$gt' in options.conditions[index.keyPath] ||
-                                    '$gte' in options.conditions[index.keyPath])) {
-                            if ('$gt' in options.conditions[index.keyPath])
-                                bounds = IDBKeyRange.lowerBound(options.conditions[index.keyPath]['$gt'], true);
+                        } else if (typeof kwargs.conditions[index.keyPath] === 'object' &&
+                                   ('$gt' in kwargs.conditions[index.keyPath] ||
+                                    '$gte' in kwargs.conditions[index.keyPath])) {
+                            if ('$gt' in kwargs.conditions[index.keyPath])
+                                bounds = IDBKeyRange.lowerBound(kwargs.conditions[index.keyPath]['$gt'], true);
                             else
-                                bounds = IDBKeyRange.lowerBound(options.conditions[index.keyPath]['$gte']);
+                                bounds = IDBKeyRange.lowerBound(kwargs.conditions[index.keyPath]['$gte']);
                             readCursor = index.openCursor(bounds, IDBCursor.NEXT || "next");
-                        } else if (typeof options.conditions[index.keyPath] === 'object' &&
-                                   ('$lt' in options.conditions[index.keyPath] ||
-                                    '$lte' in options.conditions[index.keyPath])) {
+                        } else if (typeof kwargs.conditions[index.keyPath] === 'object' &&
+                                   ('$lt' in kwargs.conditions[index.keyPath] ||
+                                    '$lte' in kwargs.conditions[index.keyPath])) {
                             let bounds;
-                            if ('$lt' in options.conditions[index.keyPath])
-                                bounds = IDBKeyRange.upperBound(options.conditions[index.keyPath]['$lt'], true);
+                            if ('$lt' in kwargs.conditions[index.keyPath])
+                                bounds = IDBKeyRange.upperBound(kwargs.conditions[index.keyPath]['$lt'], true);
                             else
-                                bounds = IDBKeyRange.upperBound(options.conditions[index.keyPath]['$lte']);
+                                bounds = IDBKeyRange.upperBound(kwargs.conditions[index.keyPath]['$lte']);
                             readCursor = index.openCursor(bounds, IDBCursor.NEXT || "next");
-                        } else if (options.conditions[index.keyPath] != undefined) {
-                            bounds = IDBKeyRange.only(options.conditions[index.keyPath]);
+                        } else if (kwargs.conditions[index.keyPath] != undefined) {
+                            bounds = IDBKeyRange.only(kwargs.conditions[index.keyPath]);
                             readCursor = index.openCursor(bounds);
                         }
                     }
-                });
-            } else if (options.index) {
-                index = store.index(options.index.name);
-                const excludeLower = !!options.index.excludeLower;
-                const excludeUpper = !!options.index.excludeUpper;
+                }
+            } else if (kwargs.index) {
+                index = store.index(kwargs.index.name);
+                const excludeLower = !!kwargs.index.excludeLower;
+                const excludeUpper = !!kwargs.index.excludeUpper;
                 if (index) {
-                    if (options.index.lower && options.index.upper) {
-                        bounds = IDBKeyRange.bound(options.index.lower, options.index.upper,
+                    if (kwargs.index.lower && kwargs.index.upper) {
+                        bounds = IDBKeyRange.bound(kwargs.index.lower, kwargs.index.upper,
                                                    excludeLower, excludeUpper);
-                    } else if (options.index.lower) {
-                        bounds = IDBKeyRange.lowerBound(options.index.lower, excludeLower);
-                    } else if (options.index.upper) {
-                        bounds = IDBKeyRange.upperBound(options.index.upper, excludeUpper);
-                    } else if (options.index.only) {
-                        bounds = IDBKeyRange.only(options.index.only);
+                    } else if (kwargs.index.lower) {
+                        bounds = IDBKeyRange.lowerBound(kwargs.index.lower, excludeLower);
+                    } else if (kwargs.index.upper) {
+                        bounds = IDBKeyRange.upperBound(kwargs.index.upper, excludeUpper);
+                    } else if (kwargs.index.only) {
+                        bounds = IDBKeyRange.only(kwargs.index.only);
                     }
-                    if (typeof options.index.order === 'string' &&
-                        options.index.order.toLowerCase() === 'desc') {
+                    if (typeof kwargs.index.order === 'string' &&
+                        kwargs.index.order.toLowerCase() === 'desc') {
                         readCursor = index.openCursor(bounds, IDBCursor.PREV || "prev");
                     } else {
                         readCursor = index.openCursor(bounds, IDBCursor.NEXT || "next");
@@ -514,88 +510,75 @@
                 }
             } else {
                 // No conditions, use the index
-                if (options.range) {
-                    const lower = options.range[0] > options.range[1] ? options.range[1] : options.range[0];
-                    const upper = options.range[0] > options.range[1] ? options.range[0] : options.range[1];
+                if (kwargs.range) {
+                    const lower = kwargs.range[0] > kwargs.range[1] ? kwargs.range[1] : kwargs.range[0];
+                    const upper = kwargs.range[0] > kwargs.range[1] ? kwargs.range[0] : kwargs.range[1];
                     bounds = IDBKeyRange.bound(lower, upper);
-                    if (options.range[0] > options.range[1]) {
+                    if (kwargs.range[0] > kwargs.range[1]) {
                         readCursor = store.openCursor(bounds, IDBCursor.PREV || "prev");
                     } else {
                         readCursor = store.openCursor(bounds, IDBCursor.NEXT || "next");
                     }
-                } else if (options.sort && options.sort.index) {
-                    if (options.sort.order === -1) {
-                        readCursor = store.index(options.sort.index).openCursor(null, IDBCursor.PREV || "prev");
+                } else if (kwargs.sort && kwargs.sort.index) {
+                    if (kwargs.sort.order === -1) {
+                        readCursor = store.index(kwargs.sort.index).openCursor(null, IDBCursor.PREV || "prev");
                     } else {
-                        readCursor = store.index(options.sort.index).openCursor(null, IDBCursor.NEXT || "next");
+                        readCursor = store.index(kwargs.sort.index).openCursor(null, IDBCursor.NEXT || "next");
                     }
                 } else {
                     readCursor = store.openCursor();
                 }
             }
 
-            if (typeof readCursor == "undefined" || !readCursor) {
-                options.error(new Error("No Cursor"));
-            } else {
-                readCursor.onerror = ev => {
-                    const error = ev.target.error;
-                    console.error("readCursor error", error, error.code, error.message, error.name, readCursor,
-                                  storeName, collection);
-                    options.error(error);
-                };
-                // Setup a handler for the cursor’s `success` event:
-                readCursor.onsuccess = ev => {
+            if (!readCursor) {
+                throw new Error("No Cursor");
+            }
+            const filterCommand = kwargs.hasFilter && `db-gateway-query-filter-callback-${kwargs.filterSig}`;
+            return await new Promise((resolve, reject) => {
+                readCursor.onerror = ev => reject(ev.target.error);
+                readCursor.onsuccess = async ev => {
                     const cursor = ev.target.result;
                     if (!cursor) {
-                        if (options.addIndividually || options.clear) {
-                            options.success(elements, /*silenced*/ true);
-                        } else {
-                            options.success(elements); // We're done. No more elements.
-                        }
-                    } else {
-                        // Cursor is not over yet.
-                        if (options.abort || (options.limit && processed >= options.limit)) {
-                            // Yet, we have processed enough elements. So, let's just skip.
-                            if (bounds) {
-                                if (options.conditions && options.conditions[index.keyPath]) {
-                                    // We need to 'terminate' the cursor cleany, by moving to the end
-                                    cursor.continue(options.conditions[index.keyPath][1] + 1);
-                                } else if (options.index && (options.index.upper || options.index.lower)) {
-                                    if (typeof options.index.order === 'string' &&
-                                        options.index.order.toLowerCase() === 'desc') {
-                                        cursor.continue(options.index.lower);
-                                    } else {
-                                        cursor.continue(options.index.upper);
-                                    }
-                                }
-                            } else {
+                        const silenced = !!(kwargs.addIndividually || kwargs.clear);
+                        resolve({elements, silenced});
+                    } else if (kwargs.abort || (kwargs.limit && processed >= kwargs.limit)) {
+                        if (bounds) {
+                            if (kwargs.conditions && kwargs.conditions[index.keyPath]) {
                                 // We need to 'terminate' the cursor cleany, by moving to the end
-                                cursor.continue();
-                            }
-                        }
-                        else if (options.offset && options.offset > skipped) {
-                            skipped++;
-                            cursor.continue(); // We need to Moving the cursor forward
-                        } else {
-                            // This time, it looks like it's good!
-                            if (!options.filter || typeof options.filter !== 'function' || options.filter(cursor.value)) {
-                                processed++;
-                                if (options.addIndividually) {
-                                    collection.add(cursor.value);
-                                } else if (options.clear) {
-                                    const deleteRequest = store.delete(cursor.value[idAttribute]);
-                                    deleteRequest.onsuccess = deleteRequest.onerror = event => {
-                                        elements.push(cursor.value);
-                                    };
+                                cursor.continue(kwargs.conditions[index.keyPath][1] + 1);
+                            } else if (kwargs.index && (kwargs.index.upper || kwargs.index.lower)) {
+                                if (typeof kwargs.index.order === 'string' &&
+                                    kwargs.index.order.toLowerCase() === 'desc') {
+                                    cursor.continue(kwargs.index.lower);
                                 } else {
-                                    elements.push(cursor.value);
+                                    cursor.continue(kwargs.index.upper);
                                 }
                             }
+                        } else {
+                            // We need to 'terminate' the cursor cleany, by moving to the end
                             cursor.continue();
                         }
+                    } else if (kwargs.offset && kwargs.offset > skipped) {
+                        skipped++;
+                        cursor.continue(); // We need to move the cursor forward
+                    } else {
+                        if (!kwargs.hasFilter || await this._rpc.invokeCommand(filterCommand, cursor.value)) {
+                            processed++;
+                            if (kwargs.addIndividually) {
+                                collection.add(cursor.value);
+                            } else if (kwargs.clear) {
+                                const deleteRequest = store.delete(cursor.value[kwargs.idAttribute]);
+                                deleteRequest.onsuccess = deleteRequest.onerror = event => {
+                                    elements.push(cursor.value);
+                                };
+                            } else {
+                                elements.push(cursor.value);
+                            }
+                        }
+                        cursor.continue();
                     }
                 };
-            }
+            });
         }
 
         close() {

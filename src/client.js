@@ -145,17 +145,15 @@
             this._iframe.setAttribute('allow', 'camera; microphone; fullscreen; autoplay; ' +
                                                'display-capture; geolocation; speaker; vibrate;');
             this._iframe.setAttribute('allowfullscreen', 'true');
-            this._iframe.addEventListener('load', () => {
-                this._rpc = ifrpc.init(this._iframe.contentWindow);
-                this._idbGateway = new ns.IDBGateway(this._rpc);
-                this._rpc.addEventListener('init', this._onClientInit.bind(this));
-                if (this.onLoaded) {
-                    this._rpc.addEventListener('loaded', () => this.onLoaded(this));
-                }
-            });
             const url = this.options.url || 'https://app.forsta.io/@';
             this._iframe.setAttribute('src', `${url}?managed`);
             el.appendChild(this._iframe);
+            this._rpc = ifrpc.init(this._iframe.contentWindow);
+            this._idbGateway = new ns.IDBGateway(this._rpc);
+            this._rpc.addEventListener('init', this._onClientInit.bind(this));
+            if (this.onLoaded) {
+                this._rpc.addEventListener('loaded', () => this.onLoaded(this));
+            }
         }
 
         async _onClientInit() {

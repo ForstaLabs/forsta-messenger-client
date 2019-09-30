@@ -219,13 +219,13 @@
 
         async init() {
             console.info(`Opening database ${this.id} (v${this.version})`);
-            const openRequest = indexedDB.open(this.id, this.version);
+            const openReq = indexedDB.open(this.id, this.version);
             await new Promise((resolve, reject) => {
-                openRequest.onblocked = ev => {
+                openReq.onblocked = ev => {
                     this._rpc.triggerEvent('db-gateway-blocked', this.id);
                 };
 
-                openRequest.onsuccess = ev => {
+                openReq.onsuccess = ev => {
                     const db = this.db = ev.target.result;
                     db.onversionchange = ev => {
                         console.warn("Database version change requested somewhere: Closing our connection!");
@@ -238,28 +238,32 @@
                     resolve();
                 };
 
-                openRequest.onerror = ev => {
+                openReq.onerror = ev => {
                     reject(new Error("Could not connect to the database"));
                 };
 
-                openRequest.onabort = ev => {
+                openReq.onabort = ev => {
                     reject(new Error("Connection to the database aborted"));
                 };
 
-                openRequest.onupgradeneeded = async ev => {
+                openReq.onupgradeneeded = async ev => {
                     console.warn(`Database upgrade needed: v${ev.oldVersion} => v${ev.newVersion}`);
                     this.db = ev.target.result;
                     try {
-                        await this.migrate(openRequest.transaction, ev.oldVersion, ev.newVersion);
+                        await this.migrate(openReq.transaction, ev.oldVersion, ev.newVersion);
                     } catch(e) {
                         reject(e);
                     }
                     // Resolve will eventually be called in onsuccess above ^^^
                 };
             });
-            this._rpc.addCommandHandler(`db-gateway-read-${this.id}`, this.onReadHandler.bind(this));
-            this._rpc.addCommandHandler(`db-gateway-update-${this.id}`, this.onUpdateHandler.bind(this));
-            this._rpc.addCommandHandler(`db-gateway-query-${this.id}`, this.onQueryHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-read-${this.id}`, this.readHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-update-${this.id}`, this.updateHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-query-${this.id}`, this.queryHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-delete-${this.id}`, this.deleteHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-clear-${this.id}`, this.clearHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-create-${this.id}`, this.createHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-count-${this.id}`, this.countHandler.bind(this));
         }
 
         async migrate(transaction, fromVersion, toVersion) {
@@ -284,162 +288,126 @@
             }
         }
 
-        execute(storeName, method, storable, options) {
-            if (method === 'create') {
-                this.create(storeName, storable, options);
-            } else if (method === 'read') {
-                if (storable.id || storable.cid) {
-                    this.read(storeName, storable, options);
-                } else {
-                    this.query(storeName, storable, options);
-                }
-            } else if (method === 'update') {
-                this.update(storeName, storable, options);
-            } else if (method === 'delete') {
-                if (storable.id || storable.cid) {
-                    this.delete(storeName, storable, options);
-                } else {
-                    //assertCollection(storable);
-                    this.clear(storeName, options);
-                }
-            } else if (method === 'noop') {
-                options.success();
-                return;
-            } else {
-                throw new Error(`Unexpected method: ${method}`);
-            }
-        }
-
-        create(storeName, model, options) {
-            if (this.schema.readonly) {
-                throw new Error("Database is readonly");
-            }
-            //assertModel(model);
-            const writeTransaction = this.db.transaction([storeName], 'readwrite');
-            const store = writeTransaction.objectStore(storeName);
-            const json = model.toJSON();
-            const idAttribute = _.result(model, 'idAttribute');
-            if (json[idAttribute] === undefined && !store.autoIncrement) {
-                json[idAttribute] = F.util.uuid4();
-            }
-            writeTransaction.onerror = e => options.error(e);
-            writeTransaction.oncomplete = () => options.success(json);
-            if (!store.keyPath) {
-                store.add(json, json[idAttribute]);
-            } else {
-                store.add(json);
-            }
-        }
-
-        async onUpdateHandler(kwargs) {
+        async createHandler(kwargs) {
             const tx = this.db.transaction([kwargs.storeName], 'readwrite');
             const store = tx.objectStore(kwargs.storeName);
-            const txDone = new Promise((resolve, reject) => {
+            if (kwargs.idFallback && !store.autoIncrement) {
+                kwargs.json[kwargs.idAttribute] = kwargs.idFallback;
+            }
+            return await new Promise((resolve, reject) => {
                 tx.oncomplete = ev => resolve();
-                tx.onerror = ev => reject(new Error("Unexpected update error"));
+                tx.onerror = ev => reject(ev.target.error);
+                let addReq;
+                if (!store.keyPath) {
+                    addReq = store.add(kwargs.json, kwargs.json[kwargs.idAttribute]);
+                } else {
+                    addReq = store.add(kwargs.json);
+                }
+                addReq.onerror = ev => reject(ev.target.error);
+                if (tx.commit) {
+                    tx.commit();
+                }
+                return kwargs.json;
             });
-            if (!store.keyPath) {
-                store.put(kwargs.json, kwargs.json[kwargs.idAttribute]);
-            } else {
-                store.put(kwargs.json);
-            }
-            if (tx.commit) {
-                tx.commit();
-            }
-            await txDone;
         }
 
-        async onReadHandler(kwargs) {
+        async updateHandler(kwargs) {
+            console.warn("updateHandler:", kwargs);
+            const tx = this.db.transaction([kwargs.storeName], 'readwrite');
+            const store = tx.objectStore(kwargs.storeName);
+            return await new Promise((resolve, reject) => {
+                tx.oncomplete = ev => resolve();
+                tx.onerror = ev => reject(ev.target.error);
+                let putReq;
+                if (!store.keyPath) {
+                    putReq = store.put(kwargs.json, kwargs.json[kwargs.idAttribute]);
+                } else {
+                    putReq = store.put(kwargs.json);
+                }
+                putReq.onerror = ev => reject(ev.target.error);
+                if (tx.commit) {
+                    tx.commit();
+                }
+            });
+        }
+
+        async readHandler(kwargs) {
+            console.warn("readHandler:", kwargs);
             const tx = this.db.transaction([kwargs.storeName], "readonly");
             const store = tx.objectStore(kwargs.storeName);
-            let getRequest;
-            let keyIdent;
+            let getReq;
             if (kwargs.json[kwargs.idAttribute]) {
-                keyIdent = kwargs.json[kwargs.idAttribute];
-                getRequest = store.get(keyIdent);
+                getReq = store.get(kwargs.json[kwargs.idAttribute]);
             } else if (kwargs.index) {
                 const index = store.index(kwargs.index.name);
-                keyIdent = kwargs.index.value;
-                getRequest = index.get(keyIdent);
+                getReq = index.get(kwargs.index.value);
             } else {
-                throw new Error("Unsupported ambiguous get request!!!!!");
-                /*
                 // We need to find which index we have
                 let cardinality = 0; // try to fit the index with most matches
-                _.each(store.indexNames, key => {
+                for (const key of store.indexNames) {
                     const index = store.index(key);
                     if (typeof index.keyPath === 'string' && 1 > cardinality) {
                         // simple index
                         if (kwargs.json[index.keyPath] !== undefined) {
-                            keyIdent = kwargs.json[index.keyPath];
-                            getRequest = index.get(keyIdent);
+                            getReq = index.get(kwargs.json[index.keyPath]);
                             cardinality = 1;
                         }
                     } else if(typeof index.keyPath === 'object' && index.keyPath.length > cardinality) {
                         // compound index
                         let valid = true;
-                        const keyValue = _.map(index.keyPath, keyPart => {
+                        const keyValue = index.keyPath.map(keyPart => {
                             valid = valid && kwargs.json[keyPart] !== undefined;
                             return kwargs.json[keyPart];
                         });
                         if (valid) {
-                            keyIdent = keyValue;
-                            getRequest = index.get(keyIdent);
+                            getReq = index.get(keyValue);
                             cardinality = index.keyPath.length;
                         }
                     }
-                });
-                */
+                }
             }
             return await new Promise((resolve, reject) => {
-                if (getRequest) {
-                    getRequest.onsuccess = ev => resolve(ev.target.result);
-                    getRequest.onerror = ev => reject(new Error("Unexpected read error"));
+                getReq.onsuccess = ev => resolve(ev.target.result);
+                getReq.onerror = ev => reject(ev.target.error);
+            });
+        }
+
+        async deleteHandler(kwargs) {
+            console.warn("deleteHandler:", kwargs);
+            const tx = this.db.transaction([kwargs.storeName], 'readwrite');
+            const store = tx.objectStore(kwargs.storeName);
+            const idAttribute = store.keyPath || kwargs.idAttribute;
+            return await new Promise((resolve, reject) => {
+                tx.oncomplete = ev => resolve();
+                tx.onerror = ev => reject(ev.target.error);
+                store.delete(kwargs.json[idAttribute]).onerror = ev => reject(ev.target.error);
+                if (tx.commit) {
+                    tx.commit();
                 }
             });
         }
 
-        // Deletes the json.id key and value in storeName from db.
-        delete(storeName, model, options) {
-            // XXX PORT
-            if (this.schema.readonly) {
-                throw new Error("Database is readonly");
-            }
-            //assertModel(model);
-            const deleteTransaction = this.db.transaction([storeName], 'readwrite');
-            const store = deleteTransaction.objectStore(storeName);
-            const json = model.toJSON();
-            const idAttribute = store.keyPath || _.result(model, 'idAttribute');
-            const deleteRequest = store.delete(json[idAttribute]);
-            deleteTransaction.oncomplete = () => options.success(null);
-            deleteRequest.onerror = () => options.error(new Error("Not Deleted"));
+        async clearHandler(kwargs) {
+            console.warn("clearHandler:", kwargs);
+            const tx = this.db.transaction([kwargs.storeName], "readwrite");
+            const store = tx.objectStore(kwargs.storeName);
+            return await new Promise((resolve, reject) => {
+                tx.oncomplete = ev => resolve();
+                tx.onerror = ev => reject(ev.target.error);
+                store.clear().onerror = ev => reject(ev.target.error);
+                if (tx.commit) {
+                    tx.commit();
+                }
+            });
         }
 
-        clear(storeName, options) {
-            // XXX PORT
-            if (this.schema.readonly) {
-                throw new Error("Database is readonly");
-            }
-            const deleteTransaction = this.db.transaction([storeName], "readwrite");
-            const store = deleteTransaction.objectStore(storeName);
-            const deleteRequest = store.clear();
-            deleteRequest.onsuccess = () => options.success(null);
-            deleteRequest.onerror = () => options.error("Not Cleared");
-        }
-
-        // Performs a query on storeName in db.
-        // options may include :
-        // - conditions : value of an index, or range for an index
-        // - range : range for the primary key
-        // - limit : max number of elements to be yielded
-        // - offset : skipped items.
-        async onQueryHandler(kwargs) {
+        async queryHandler(kwargs) {
+            console.warn("queryHandler:", kwargs);
             const elements = [];
             let skipped = 0;
             let processed = 0;
             const tx = this.db.transaction([kwargs.storeName], "readonly");
             const store = tx.objectStore(kwargs.storeName);
-
             let readCursor;
             let bounds;
             let index;
@@ -539,9 +507,8 @@
                 readCursor.onsuccess = async ev => {
                     const cursor = ev.target.result;
                     if (!cursor) {
-                        const silenced = !!(kwargs.addIndividually || kwargs.clear);
-                        resolve({elements, silenced});
-                    } else if (kwargs.abort || (kwargs.limit && processed >= kwargs.limit)) {
+                        resolve(elements);
+                    } else if (kwargs.limit && processed >= kwargs.limit) {
                         if (bounds) {
                             if (kwargs.conditions && kwargs.conditions[index.keyPath]) {
                                 // We need to 'terminate' the cursor cleany, by moving to the end
@@ -562,18 +529,12 @@
                         skipped++;
                         cursor.continue(); // We need to move the cursor forward
                     } else {
+                        if (kwargs.hasFilter) {
+                            debugger;
+                        }
                         if (!kwargs.hasFilter || await this._rpc.invokeCommand(filterCommand, cursor.value)) {
                             processed++;
-                            if (kwargs.addIndividually) {
-                                collection.add(cursor.value);
-                            } else if (kwargs.clear) {
-                                const deleteRequest = store.delete(cursor.value[kwargs.idAttribute]);
-                                deleteRequest.onsuccess = deleteRequest.onerror = event => {
-                                    elements.push(cursor.value);
-                                };
-                            } else {
-                                elements.push(cursor.value);
-                            }
+                            elements.push(cursor.value);
                         }
                         cursor.continue();
                     }
@@ -581,9 +542,37 @@
             });
         }
 
+        async countHandler(kwargs) {
+            console.warn("countHandler:", kwargs);
+            const tx = this.db.transaction([kwargs.storeName], 'readonly');
+            const store = tx.objectStore(kwargs.storeName);
+            return await new Promise((resolve, reject) => {
+                let countReq;
+                if (kwargs.index) {
+                    let keyRange;
+                    if (kwargs.bound) {
+                        keyRange = IDBKeyRange.bound(kwargs.bound.lower, kwargs.bound.upper,
+                                                     kwargs.bound.lowerOpen, kwargs.bound.upperOpen);
+                    } else {
+                        throw new Error("Unsupported keyRange");
+                    }
+                    const index = store.index(kwargs.index);
+                    countReq = index.count(keyRange);
+                } else {
+                    countReq = store.count();
+                }
+                countReq.onerror = ev => reject(ev.target.error);
+                countReq.onsuccess = ev => resolve(ev.target.result);
+                if (tx.commit) {
+                    tx.commit();
+                }
+            });
+        }
+
         close() {
             // XXX PORT
-            if(this.db){
+            console.error('XXX PORT');
+            if (this.db) {
                 this.db.close();
             }
         }
@@ -596,14 +585,14 @@
             this._initialized = new Map();
         }
 
-        async onInitHandler(name, id, version) {
-            if (this._initialized.has(name)) {
-                console.warn("DB already initialized:", name);
+        async onInitHandler(kwargs) {
+            if (this._initialized.has(kwargs.name)) {
+                console.error("DB already initialized:", kwargs.name);
                 return;
             } else {
-                const driver = new IDBDriver(name, id, version, this._rpc);
+                const driver = new IDBDriver(kwargs.name, kwargs.id, kwargs.version, this._rpc);
                 await driver.init();
-                this._initialized.set(name, driver);
+                this._initialized.set(kwargs.name, driver);
             }
         }
     };

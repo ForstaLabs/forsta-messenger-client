@@ -1,18 +1,22 @@
 // vim: ts=4:sw=4:expandtab
 /* global forsta, ifrpc */
 
+
+/**
+ * @namespace forsta
+ */
+self.forsta = self.forsta || {};
+
+/**
+ * @namespace forsta.messenger
+ */
+forsta.messenger = forsta.messenger || {};
+
+
 (function() {
     'use strict';
 
-    /**
-     * @namespace forsta
-     */
-    self.forsta = self.forsta || {};
-
-    /**
-     * @namespace forsta.messenger
-     */
-    const ns = forsta.messenger = forsta.messenger || {};
+    const ns = forsta.messenger;
 
     /**
      * The Forsta messenger client class.

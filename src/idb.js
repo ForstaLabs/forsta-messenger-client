@@ -366,10 +366,12 @@
                     }
                 }
             }
-            return await new Promise((resolve, reject) => {
-                getReq.onsuccess = ev => resolve(ev.target.result);
-                getReq.onerror = ev => reject(ev.target.error);
-            });
+            if (getReq) {
+                return await new Promise((resolve, reject) => {
+                    getReq.onsuccess = ev => resolve(ev.target.result);
+                    getReq.onerror = ev => reject(ev.target.error);
+                });
+            }
         }
 
         async deleteHandler(kwargs) {
@@ -405,7 +407,6 @@
             console.warn("queryHandler:", kwargs);
             const elements = [];
             let skipped = 0;
-            let processed = 0;
             const tx = this.db.transaction([kwargs.storeName], "readonly");
             const store = tx.objectStore(kwargs.storeName);
             let readCursor;
@@ -501,14 +502,13 @@
             if (!readCursor) {
                 throw new Error("No Cursor");
             }
-            const filterCommand = kwargs.hasFilter && `db-gateway-query-filter-callback-${kwargs.filterSig}`;
             return await new Promise((resolve, reject) => {
                 readCursor.onerror = ev => reject(ev.target.error);
-                readCursor.onsuccess = async ev => {
+                readCursor.onsuccess = ev => {
                     const cursor = ev.target.result;
                     if (!cursor) {
                         resolve(elements);
-                    } else if (kwargs.limit && processed >= kwargs.limit) {
+                    } else if (kwargs.limit && elements.length >= kwargs.limit) {
                         if (bounds) {
                             if (kwargs.conditions && kwargs.conditions[index.keyPath]) {
                                 // We need to 'terminate' the cursor cleany, by moving to the end
@@ -529,10 +529,7 @@
                         skipped++;
                         cursor.continue(); // We need to move the cursor forward
                     } else {
-                        if (!kwargs.hasFilter || await this._rpc.invokeCommand(filterCommand, cursor.value)) {
-                            processed++;
-                            elements.push(cursor.value);
-                        }
+                        elements.push(cursor.value);
                         cursor.continue();
                     }
                 };

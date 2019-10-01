@@ -338,17 +338,15 @@
             this._iframe.setAttribute('allow', 'camera; microphone; fullscreen; autoplay; ' +
                                                'display-capture; geolocation; speaker; vibrate;');
             this._iframe.setAttribute('allowfullscreen', 'true');
-            this._iframe.addEventListener('load', () => {
-                this._rpc = ifrpc.init(this._iframe.contentWindow);
-                this._idbGateway = new ns.IDBGateway(this._rpc);
-                this._rpc.addEventListener('init', this._onClientInit.bind(this));
-                if (this.onLoaded) {
-                    this._rpc.addEventListener('loaded', () => this.onLoaded(this));
-                }
-            });
             const url = this.options.url || 'https://app.forsta.io/@';
             this._iframe.setAttribute('src', `${url}?managed`);
             el.appendChild(this._iframe);
+            this._rpc = ifrpc.init(this._iframe.contentWindow);
+            this._idbGateway = new ns.IDBGateway(this._rpc);
+            this._rpc.addEventListener('init', this._onClientInit.bind(this));
+            if (this.onLoaded) {
+                this._rpc.addEventListener('loaded', () => this.onLoaded(this));
+            }
         }
 
         async _onClientInit() {
@@ -711,13 +709,13 @@
 
         async init() {
             console.info(`Opening database ${this.id} (v${this.version})`);
-            const openRequest = indexedDB.open(this.id, this.version);
+            const openReq = indexedDB.open(this.id, this.version);
             await new Promise((resolve, reject) => {
-                openRequest.onblocked = ev => {
+                openReq.onblocked = ev => {
                     this._rpc.triggerEvent('db-gateway-blocked', this.id);
                 };
 
-                openRequest.onsuccess = ev => {
+                openReq.onsuccess = ev => {
                     const db = this.db = ev.target.result;
                     db.onversionchange = ev => {
                         console.warn("Database version change requested somewhere: Closing our connection!");
@@ -730,27 +728,33 @@
                     resolve();
                 };
 
-                openRequest.onerror = ev => {
+                openReq.onerror = ev => {
                     reject(new Error("Could not connect to the database"));
                 };
 
-                openRequest.onabort = ev => {
+                openReq.onabort = ev => {
                     reject(new Error("Connection to the database aborted"));
                 };
 
-                openRequest.onupgradeneeded = async ev => {
+                openReq.onupgradeneeded = async ev => {
                     console.warn(`Database upgrade needed: v${ev.oldVersion} => v${ev.newVersion}`);
                     this.db = ev.target.result;
                     try {
-                        await this.migrate(openRequest.transaction, ev.oldVersion, ev.newVersion);
+                        await this.migrate(openReq.transaction, ev.oldVersion, ev.newVersion);
                     } catch(e) {
                         reject(e);
                     }
                     // Resolve will eventually be called in onsuccess above ^^^
                 };
             });
-            this._rpc.addCommandHandler(`db-gateway-read-${this.id}`, this.onReadHandler.bind(this));
-            this._rpc.addCommandHandler(`db-gateway-update-${this.id}`, this.onUpdateHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-read-${this.id}`, this.readHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-update-${this.id}`, this.updateHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-query-${this.id}`, this.queryHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-delete-${this.id}`, this.deleteHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-clear-${this.id}`, this.clearHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-create-${this.id}`, this.createHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-count-${this.id}`, this.countHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-object-store-names-${this.id}`, this.objectStoreNamesHandler.bind(this));
         }
 
         async migrate(transaction, fromVersion, toVersion) {
@@ -775,230 +779,185 @@
             }
         }
 
-        execute(storeName, method, storable, options) {
-            if (method === 'create') {
-                this.create(storeName, storable, options);
-            } else if (method === 'read') {
-                if (storable.id || storable.cid) {
-                    this.read(storeName, storable, options);
-                } else {
-                    this.query(storeName, storable, options);
-                }
-            } else if (method === 'update') {
-                this.update(storeName, storable, options);
-            } else if (method === 'delete') {
-                if (storable.id || storable.cid) {
-                    this.delete(storeName, storable, options);
-                } else {
-                    //assertCollection(storable);
-                    this.clear(storeName, options);
-                }
-            } else if (method === 'noop') {
-                options.success();
-                return;
-            } else {
-                throw new Error(`Unexpected method: ${method}`);
-            }
-        }
-
-        create(storeName, model, options) {
-            if (this.schema.readonly) {
-                throw new Error("Database is readonly");
-            }
-            //assertModel(model);
-            const writeTransaction = this.db.transaction([storeName], 'readwrite');
-            const store = writeTransaction.objectStore(storeName);
-            const json = model.toJSON();
-            const idAttribute = _.result(model, 'idAttribute');
-            if (json[idAttribute] === undefined && !store.autoIncrement) {
-                json[idAttribute] = F.util.uuid4();
-            }
-            writeTransaction.onerror = e => options.error(e);
-            writeTransaction.oncomplete = () => options.success(json);
-            if (!store.keyPath) {
-                store.add(json, json[idAttribute]);
-            } else {
-                store.add(json);
-            }
-        }
-
-        async onUpdateHandler(kwargs) {
+        async createHandler(kwargs) {
             const tx = this.db.transaction([kwargs.storeName], 'readwrite');
             const store = tx.objectStore(kwargs.storeName);
-            const txDone = new Promise((resolve, reject) => {
+            if (kwargs.idFallback && !store.autoIncrement) {
+                kwargs.json[kwargs.idAttribute] = kwargs.idFallback;
+            }
+            return await new Promise((resolve, reject) => {
                 tx.oncomplete = ev => resolve();
-                tx.onerror = ev => reject(new Error("Unexpected update error"));
+                tx.onerror = ev => reject(ev.target.error);
+                let addReq;
+                if (!store.keyPath) {
+                    addReq = store.add(kwargs.json, kwargs.json[kwargs.idAttribute]);
+                } else {
+                    addReq = store.add(kwargs.json);
+                }
+                addReq.onerror = ev => reject(ev.target.error);
+                if (tx.commit) {
+                    tx.commit();
+                }
+                return kwargs.json;
             });
-            if (!store.keyPath) {
-                store.put(kwargs.json, kwargs.json[kwargs.idAttribute]);
-            } else {
-                store.put(kwargs.json);
-            }
-            if (tx.commit) {
-                tx.commit();
-            }
-            await txDone;
         }
 
-        async onReadHandler(kwargs) {
+        async updateHandler(kwargs) {
+            const tx = this.db.transaction([kwargs.storeName], 'readwrite');
+            const store = tx.objectStore(kwargs.storeName);
+            return await new Promise((resolve, reject) => {
+                tx.oncomplete = ev => resolve();
+                tx.onerror = ev => reject(ev.target.error);
+                let putReq;
+                if (!store.keyPath) {
+                    putReq = store.put(kwargs.json, kwargs.json[kwargs.idAttribute]);
+                } else {
+                    putReq = store.put(kwargs.json);
+                }
+                putReq.onerror = ev => reject(ev.target.error);
+                if (tx.commit) {
+                    tx.commit();
+                }
+            });
+        }
+
+        async readHandler(kwargs) {
             const tx = this.db.transaction([kwargs.storeName], "readonly");
             const store = tx.objectStore(kwargs.storeName);
-            const json = kwargs.json;
-            const idAttribute = kwargs.idAttribute;
-            let getRequest;
-            let keyIdent;
-            if (json[idAttribute]) {
-                keyIdent = json[idAttribute];
-                getRequest = store.get(keyIdent);
+            let getReq;
+            if (kwargs.json[kwargs.idAttribute]) {
+                getReq = store.get(kwargs.json[kwargs.idAttribute]);
             } else if (kwargs.index) {
                 const index = store.index(kwargs.index.name);
-                keyIdent = kwargs.index.value;
-                getRequest = index.get(keyIdent);
+                getReq = index.get(kwargs.index.value);
             } else {
-                throw new Error("Unsupported ambiguous get request!!!!!");
-                /*
                 // We need to find which index we have
                 let cardinality = 0; // try to fit the index with most matches
-                _.each(store.indexNames, key => {
+                for (const key of store.indexNames) {
                     const index = store.index(key);
                     if (typeof index.keyPath === 'string' && 1 > cardinality) {
                         // simple index
-                        if (json[index.keyPath] !== undefined) {
-                            keyIdent = json[index.keyPath];
-                            getRequest = index.get(keyIdent);
+                        if (kwargs.json[index.keyPath] !== undefined) {
+                            getReq = index.get(kwargs.json[index.keyPath]);
                             cardinality = 1;
                         }
                     } else if(typeof index.keyPath === 'object' && index.keyPath.length > cardinality) {
                         // compound index
                         let valid = true;
-                        const keyValue = _.map(index.keyPath, keyPart => {
-                            valid = valid && json[keyPart] !== undefined;
-                            return json[keyPart];
+                        const keyValue = index.keyPath.map(keyPart => {
+                            valid = valid && kwargs.json[keyPart] !== undefined;
+                            return kwargs.json[keyPart];
                         });
                         if (valid) {
-                            keyIdent = keyValue;
-                            getRequest = index.get(keyIdent);
+                            getReq = index.get(keyValue);
                             cardinality = index.keyPath.length;
                         }
                     }
-                });
-                */
+                }
             }
+            if (getReq) {
+                return await new Promise((resolve, reject) => {
+                    getReq.onsuccess = ev => resolve(ev.target.result);
+                    getReq.onerror = ev => reject(ev.target.error);
+                });
+            }
+        }
+
+        async deleteHandler(kwargs) {
+            const tx = this.db.transaction([kwargs.storeName], 'readwrite');
+            const store = tx.objectStore(kwargs.storeName);
+            const idAttribute = store.keyPath || kwargs.idAttribute;
             return await new Promise((resolve, reject) => {
-                if (getRequest) {
-                    getRequest.onsuccess = ev => resolve(ev.target.result);
-                    getRequest.onerror = ev => reject(new Error("Unexpected read error"));
+                tx.oncomplete = ev => resolve();
+                tx.onerror = ev => reject(ev.target.error);
+                store.delete(kwargs.json[idAttribute]).onerror = ev => reject(ev.target.error);
+                if (tx.commit) {
+                    tx.commit();
                 }
             });
         }
 
-        // Deletes the json.id key and value in storeName from db.
-        delete(storeName, model, options) {
-            // XXX PORT
-            if (this.schema.readonly) {
-                throw new Error("Database is readonly");
-            }
-            //assertModel(model);
-            const deleteTransaction = this.db.transaction([storeName], 'readwrite');
-            const store = deleteTransaction.objectStore(storeName);
-            const json = model.toJSON();
-            const idAttribute = store.keyPath || _.result(model, 'idAttribute');
-            const deleteRequest = store.delete(json[idAttribute]);
-            deleteTransaction.oncomplete = () => options.success(null);
-            deleteRequest.onerror = () => options.error(new Error("Not Deleted"));
+        async clearHandler(kwargs) {
+            const tx = this.db.transaction([kwargs.storeName], "readwrite");
+            const store = tx.objectStore(kwargs.storeName);
+            return await new Promise((resolve, reject) => {
+                tx.oncomplete = ev => resolve();
+                tx.onerror = ev => reject(ev.target.error);
+                store.clear().onerror = ev => reject(ev.target.error);
+                if (tx.commit) {
+                    tx.commit();
+                }
+            });
         }
 
-        clear(storeName, options) {
-            // XXX PORT
-            if (this.schema.readonly) {
-                throw new Error("Database is readonly");
-            }
-            const deleteTransaction = this.db.transaction([storeName], "readwrite");
-            const store = deleteTransaction.objectStore(storeName);
-            const deleteRequest = store.clear();
-            deleteRequest.onsuccess = () => options.success(null);
-            deleteRequest.onerror = () => options.error("Not Cleared");
-        }
-
-        // Performs a query on storeName in db.
-        // options may include :
-        // - conditions : value of an index, or range for an index
-        // - range : range for the primary key
-        // - limit : max number of elements to be yielded
-        // - offset : skipped items.
-        query(storeName, collection, options) {
-            // XXX PORT
-            //assertCollection(collection);
+        async queryHandler(kwargs) {
             const elements = [];
             let skipped = 0;
-            let processed = 0;
-            const queryTransaction = this.db.transaction([storeName], "readonly");
-            const idAttribute = collection.idAttribute || _.result(collection.model.prototype, 'idAttribute');
-            const store = queryTransaction.objectStore(storeName);
-
+            const tx = this.db.transaction([kwargs.storeName], "readonly");
+            const store = tx.objectStore(kwargs.storeName);
             let readCursor;
             let bounds;
             let index;
-            if (options.conditions) {
+            if (kwargs.conditions) {
                 // We have a condition, we need to use it for the cursor
-                _.each(store.indexNames, key => {
+                for (const key of store.indexNames) {
                     if (!readCursor) {
                         index = store.index(key);
-                        if (options.conditions[index.keyPath] instanceof Array) {
-                            const lower = options.conditions[index.keyPath][0] > options.conditions[index.keyPath][1] ?
-                                          options.conditions[index.keyPath][1] :
-                                          options.conditions[index.keyPath][0];
-                            const upper = options.conditions[index.keyPath][0] > options.conditions[index.keyPath][1] ?
-                                          options.conditions[index.keyPath][0] :
-                                          options.conditions[index.keyPath][1];
+                        if (kwargs.conditions[index.keyPath] instanceof Array) {
+                            const lower = kwargs.conditions[index.keyPath][0] > kwargs.conditions[index.keyPath][1] ?
+                                          kwargs.conditions[index.keyPath][1] :
+                                          kwargs.conditions[index.keyPath][0];
+                            const upper = kwargs.conditions[index.keyPath][0] > kwargs.conditions[index.keyPath][1] ?
+                                          kwargs.conditions[index.keyPath][0] :
+                                          kwargs.conditions[index.keyPath][1];
                             bounds = IDBKeyRange.bound(lower, upper, true, true);
-                            if (options.conditions[index.keyPath][0] > options.conditions[index.keyPath][1]) {
+                            if (kwargs.conditions[index.keyPath][0] > kwargs.conditions[index.keyPath][1]) {
                                 // Looks like we want the DESC order
                                 readCursor = index.openCursor(bounds, IDBCursor.PREV || "prev");
                             } else {
                                 // We want ASC order
                                 readCursor = index.openCursor(bounds, IDBCursor.NEXT || "next");
                             }
-                        } else if (typeof options.conditions[index.keyPath] === 'object' &&
-                                   ('$gt' in options.conditions[index.keyPath] ||
-                                    '$gte' in options.conditions[index.keyPath])) {
-                            if ('$gt' in options.conditions[index.keyPath])
-                                bounds = IDBKeyRange.lowerBound(options.conditions[index.keyPath]['$gt'], true);
+                        } else if (typeof kwargs.conditions[index.keyPath] === 'object' &&
+                                   ('$gt' in kwargs.conditions[index.keyPath] ||
+                                    '$gte' in kwargs.conditions[index.keyPath])) {
+                            if ('$gt' in kwargs.conditions[index.keyPath])
+                                bounds = IDBKeyRange.lowerBound(kwargs.conditions[index.keyPath]['$gt'], true);
                             else
-                                bounds = IDBKeyRange.lowerBound(options.conditions[index.keyPath]['$gte']);
+                                bounds = IDBKeyRange.lowerBound(kwargs.conditions[index.keyPath]['$gte']);
                             readCursor = index.openCursor(bounds, IDBCursor.NEXT || "next");
-                        } else if (typeof options.conditions[index.keyPath] === 'object' &&
-                                   ('$lt' in options.conditions[index.keyPath] ||
-                                    '$lte' in options.conditions[index.keyPath])) {
+                        } else if (typeof kwargs.conditions[index.keyPath] === 'object' &&
+                                   ('$lt' in kwargs.conditions[index.keyPath] ||
+                                    '$lte' in kwargs.conditions[index.keyPath])) {
                             let bounds;
-                            if ('$lt' in options.conditions[index.keyPath])
-                                bounds = IDBKeyRange.upperBound(options.conditions[index.keyPath]['$lt'], true);
+                            if ('$lt' in kwargs.conditions[index.keyPath])
+                                bounds = IDBKeyRange.upperBound(kwargs.conditions[index.keyPath]['$lt'], true);
                             else
-                                bounds = IDBKeyRange.upperBound(options.conditions[index.keyPath]['$lte']);
+                                bounds = IDBKeyRange.upperBound(kwargs.conditions[index.keyPath]['$lte']);
                             readCursor = index.openCursor(bounds, IDBCursor.NEXT || "next");
-                        } else if (options.conditions[index.keyPath] != undefined) {
-                            bounds = IDBKeyRange.only(options.conditions[index.keyPath]);
+                        } else if (kwargs.conditions[index.keyPath] != undefined) {
+                            bounds = IDBKeyRange.only(kwargs.conditions[index.keyPath]);
                             readCursor = index.openCursor(bounds);
                         }
                     }
-                });
-            } else if (options.index) {
-                index = store.index(options.index.name);
-                const excludeLower = !!options.index.excludeLower;
-                const excludeUpper = !!options.index.excludeUpper;
+                }
+            } else if (kwargs.index) {
+                index = store.index(kwargs.index.name);
+                const excludeLower = !!kwargs.index.excludeLower;
+                const excludeUpper = !!kwargs.index.excludeUpper;
                 if (index) {
-                    if (options.index.lower && options.index.upper) {
-                        bounds = IDBKeyRange.bound(options.index.lower, options.index.upper,
+                    if (kwargs.index.lower && kwargs.index.upper) {
+                        bounds = IDBKeyRange.bound(kwargs.index.lower, kwargs.index.upper,
                                                    excludeLower, excludeUpper);
-                    } else if (options.index.lower) {
-                        bounds = IDBKeyRange.lowerBound(options.index.lower, excludeLower);
-                    } else if (options.index.upper) {
-                        bounds = IDBKeyRange.upperBound(options.index.upper, excludeUpper);
-                    } else if (options.index.only) {
-                        bounds = IDBKeyRange.only(options.index.only);
+                    } else if (kwargs.index.lower) {
+                        bounds = IDBKeyRange.lowerBound(kwargs.index.lower, excludeLower);
+                    } else if (kwargs.index.upper) {
+                        bounds = IDBKeyRange.upperBound(kwargs.index.upper, excludeUpper);
+                    } else if (kwargs.index.only) {
+                        bounds = IDBKeyRange.only(kwargs.index.only);
                     }
-                    if (typeof options.index.order === 'string' &&
-                        options.index.order.toLowerCase() === 'desc') {
+                    if (typeof kwargs.index.order === 'string' &&
+                        kwargs.index.order.toLowerCase() === 'desc') {
                         readCursor = index.openCursor(bounds, IDBCursor.PREV || "prev");
                     } else {
                         readCursor = index.openCursor(bounds, IDBCursor.NEXT || "next");
@@ -1006,93 +965,97 @@
                 }
             } else {
                 // No conditions, use the index
-                if (options.range) {
-                    const lower = options.range[0] > options.range[1] ? options.range[1] : options.range[0];
-                    const upper = options.range[0] > options.range[1] ? options.range[0] : options.range[1];
+                if (kwargs.range) {
+                    const lower = kwargs.range[0] > kwargs.range[1] ? kwargs.range[1] : kwargs.range[0];
+                    const upper = kwargs.range[0] > kwargs.range[1] ? kwargs.range[0] : kwargs.range[1];
                     bounds = IDBKeyRange.bound(lower, upper);
-                    if (options.range[0] > options.range[1]) {
+                    if (kwargs.range[0] > kwargs.range[1]) {
                         readCursor = store.openCursor(bounds, IDBCursor.PREV || "prev");
                     } else {
                         readCursor = store.openCursor(bounds, IDBCursor.NEXT || "next");
                     }
-                } else if (options.sort && options.sort.index) {
-                    if (options.sort.order === -1) {
-                        readCursor = store.index(options.sort.index).openCursor(null, IDBCursor.PREV || "prev");
+                } else if (kwargs.sort && kwargs.sort.index) {
+                    if (kwargs.sort.order === -1) {
+                        readCursor = store.index(kwargs.sort.index).openCursor(null, IDBCursor.PREV || "prev");
                     } else {
-                        readCursor = store.index(options.sort.index).openCursor(null, IDBCursor.NEXT || "next");
+                        readCursor = store.index(kwargs.sort.index).openCursor(null, IDBCursor.NEXT || "next");
                     }
                 } else {
                     readCursor = store.openCursor();
                 }
             }
 
-            if (typeof readCursor == "undefined" || !readCursor) {
-                options.error(new Error("No Cursor"));
-            } else {
-                readCursor.onerror = ev => {
-                    const error = ev.target.error;
-                    console.error("readCursor error", error, error.code, error.message, error.name, readCursor,
-                                  storeName, collection);
-                    options.error(error);
-                };
-                // Setup a handler for the cursor’s `success` event:
+            if (!readCursor) {
+                throw new Error("No Cursor");
+            }
+            return await new Promise((resolve, reject) => {
+                readCursor.onerror = ev => reject(ev.target.error);
                 readCursor.onsuccess = ev => {
                     const cursor = ev.target.result;
                     if (!cursor) {
-                        if (options.addIndividually || options.clear) {
-                            options.success(elements, /*silenced*/ true);
-                        } else {
-                            options.success(elements); // We're done. No more elements.
-                        }
-                    } else {
-                        // Cursor is not over yet.
-                        if (options.abort || (options.limit && processed >= options.limit)) {
-                            // Yet, we have processed enough elements. So, let's just skip.
-                            if (bounds) {
-                                if (options.conditions && options.conditions[index.keyPath]) {
-                                    // We need to 'terminate' the cursor cleany, by moving to the end
-                                    cursor.continue(options.conditions[index.keyPath][1] + 1);
-                                } else if (options.index && (options.index.upper || options.index.lower)) {
-                                    if (typeof options.index.order === 'string' &&
-                                        options.index.order.toLowerCase() === 'desc') {
-                                        cursor.continue(options.index.lower);
-                                    } else {
-                                        cursor.continue(options.index.upper);
-                                    }
-                                }
-                            } else {
+                        resolve(elements);
+                    } else if (kwargs.limit && elements.length >= kwargs.limit) {
+                        if (bounds) {
+                            if (kwargs.conditions && kwargs.conditions[index.keyPath]) {
                                 // We need to 'terminate' the cursor cleany, by moving to the end
-                                cursor.continue();
-                            }
-                        }
-                        else if (options.offset && options.offset > skipped) {
-                            skipped++;
-                            cursor.continue(); // We need to Moving the cursor forward
-                        } else {
-                            // This time, it looks like it's good!
-                            if (!options.filter || typeof options.filter !== 'function' || options.filter(cursor.value)) {
-                                processed++;
-                                if (options.addIndividually) {
-                                    collection.add(cursor.value);
-                                } else if (options.clear) {
-                                    const deleteRequest = store.delete(cursor.value[idAttribute]);
-                                    deleteRequest.onsuccess = deleteRequest.onerror = event => {
-                                        elements.push(cursor.value);
-                                    };
+                                cursor.continue(kwargs.conditions[index.keyPath][1] + 1);
+                            } else if (kwargs.index && (kwargs.index.upper || kwargs.index.lower)) {
+                                if (typeof kwargs.index.order === 'string' &&
+                                    kwargs.index.order.toLowerCase() === 'desc') {
+                                    cursor.continue(kwargs.index.lower);
                                 } else {
-                                    elements.push(cursor.value);
+                                    cursor.continue(kwargs.index.upper);
                                 }
                             }
+                        } else {
+                            // We need to 'terminate' the cursor cleany, by moving to the end
                             cursor.continue();
                         }
+                    } else if (kwargs.offset && kwargs.offset > skipped) {
+                        skipped++;
+                        cursor.continue(); // We need to move the cursor forward
+                    } else {
+                        elements.push(cursor.value);
+                        cursor.continue();
                     }
                 };
-            }
+            });
+        }
+
+        async countHandler(kwargs) {
+            const tx = this.db.transaction([kwargs.storeName], 'readonly');
+            const store = tx.objectStore(kwargs.storeName);
+            return await new Promise((resolve, reject) => {
+                let countReq;
+                if (kwargs.index) {
+                    let keyRange;
+                    if (kwargs.bound) {
+                        keyRange = IDBKeyRange.bound(kwargs.bound.lower, kwargs.bound.upper,
+                                                     kwargs.bound.lowerOpen, kwargs.bound.upperOpen);
+                    } else {
+                        throw new Error("Unsupported keyRange");
+                    }
+                    const index = store.index(kwargs.index);
+                    countReq = index.count(keyRange);
+                } else {
+                    countReq = store.count();
+                }
+                countReq.onerror = ev => reject(ev.target.error);
+                countReq.onsuccess = ev => resolve(ev.target.result);
+                if (tx.commit) {
+                    tx.commit();
+                }
+            });
+        }
+
+        objectStoreNamesHandler() {
+            return Array.from(this.db.objectStoreNames);
         }
 
         close() {
             // XXX PORT
-            if(this.db){
+            console.error('XXX PORT');
+            if (this.db) {
                 this.db.close();
             }
         }
@@ -1105,14 +1068,14 @@
             this._initialized = new Map();
         }
 
-        async onInitHandler(name, id, version) {
-            if (this._initialized.has(name)) {
-                console.warn("DB already initialized:", name);
+        async onInitHandler(kwargs) {
+            if (this._initialized.has(kwargs.name)) {
+                console.error("DB already initialized:", kwargs.name);
                 return;
             } else {
-                const driver = new IDBDriver(name, id, version, this._rpc);
+                const driver = new IDBDriver(kwargs.name, kwargs.id, kwargs.version, this._rpc);
                 await driver.init();
-                this._initialized.set(name, driver);
+                this._initialized.set(kwargs.name, driver);
             }
         }
     };

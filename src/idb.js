@@ -264,6 +264,7 @@
             this._rpc.addCommandHandler(`db-gateway-clear-${this.id}`, this.clearHandler.bind(this));
             this._rpc.addCommandHandler(`db-gateway-create-${this.id}`, this.createHandler.bind(this));
             this._rpc.addCommandHandler(`db-gateway-count-${this.id}`, this.countHandler.bind(this));
+            this._rpc.addCommandHandler(`db-gateway-object-store-names-${this.id}`, this.objectStoreNamesHandler.bind(this));
         }
 
         async migrate(transaction, fromVersion, toVersion) {
@@ -312,7 +313,6 @@
         }
 
         async updateHandler(kwargs) {
-            console.warn("updateHandler:", kwargs);
             const tx = this.db.transaction([kwargs.storeName], 'readwrite');
             const store = tx.objectStore(kwargs.storeName);
             return await new Promise((resolve, reject) => {
@@ -332,7 +332,6 @@
         }
 
         async readHandler(kwargs) {
-            console.warn("readHandler:", kwargs);
             const tx = this.db.transaction([kwargs.storeName], "readonly");
             const store = tx.objectStore(kwargs.storeName);
             let getReq;
@@ -375,7 +374,6 @@
         }
 
         async deleteHandler(kwargs) {
-            console.warn("deleteHandler:", kwargs);
             const tx = this.db.transaction([kwargs.storeName], 'readwrite');
             const store = tx.objectStore(kwargs.storeName);
             const idAttribute = store.keyPath || kwargs.idAttribute;
@@ -390,7 +388,6 @@
         }
 
         async clearHandler(kwargs) {
-            console.warn("clearHandler:", kwargs);
             const tx = this.db.transaction([kwargs.storeName], "readwrite");
             const store = tx.objectStore(kwargs.storeName);
             return await new Promise((resolve, reject) => {
@@ -404,7 +401,6 @@
         }
 
         async queryHandler(kwargs) {
-            console.warn("queryHandler:", kwargs);
             const elements = [];
             let skipped = 0;
             const tx = this.db.transaction([kwargs.storeName], "readonly");
@@ -537,7 +533,6 @@
         }
 
         async countHandler(kwargs) {
-            console.warn("countHandler:", kwargs);
             const tx = this.db.transaction([kwargs.storeName], 'readonly');
             const store = tx.objectStore(kwargs.storeName);
             return await new Promise((resolve, reject) => {
@@ -561,6 +556,10 @@
                     tx.commit();
                 }
             });
+        }
+
+        objectStoreNamesHandler() {
+            return Array.from(this.db.objectStoreNames);
         }
 
         close() {

@@ -339,12 +339,53 @@ forsta.messenger = forsta.messenger || {};
             this._iframe.style.border = 'none';
             this._iframe.style.width = '100%';
             this._iframe.style.height = '100%';
-            this._iframe.setAttribute('allow', 'camera; microphone; fullscreen; autoplay; ' +
-                                               'display-capture; geolocation; speaker; vibrate;');
-            this._iframe.setAttribute('allowfullscreen', 'true');
+            const desiredFeatures = new Set([
+                'camera',
+                'microphone',
+                'fullscreen',
+                'autoplay',
+                'display-capture',
+                'geolocation',
+                'speaker',
+                'vibrate'
+            ]);
+            if (document.featurePolicy && document.featurePolicy.allowedFeatures) {
+                const allowed = new Set(document.featurePolicy.allowedFeatures());
+                for (const x of Array.from(desiredFeatures)) {
+                    if (!allowed.has(x)) {
+                        desiredFeatures.delete(x);
+                    }
+                }
+            }
+            this._iframe.setAttribute('allow', Array.from(desiredFeatures).join('; '));
+            if (desiredFeatures.has('fullscreen')) {
+                // Legacy fullscreen mode required too.
+                this._iframe.setAttribute('allowfullscreen', 'true');
+            }
             const url = this.options.url || 'https://app.forsta.io/@';
             this._iframe.setAttribute('src', `${url}?managed`);
             el.appendChild(this._iframe);
+            this._iframe.contentWindow.addEventListener('beforeunload', ev => {
+                console.error("before unload");
+            });
+            this._iframe.contentWindow.addEventListener('unload', ev => {
+                console.error("unload");
+            });
+            this._iframe.contentWindow.addEventListener('unload', ev => {
+                console.error("unload");
+            });
+            this._iframe.contentWindow.addEventListener('load', ev => {
+                console.error("load");
+            });
+            this._iframe.addEventListener('load', ev => {
+                console.error("load iframe", ev);
+            });
+            this._iframe.addEventListener('loadstart', ev => {
+                console.error("loadstart iframe");
+            });
+            this._iframe.addEventListener('loadend', ev => {
+                console.error("loadend iframe");
+            });
             this._rpc = ifrpc.init(this._iframe.contentWindow);
             this._idbGateway = new ns.IDBGateway(this._rpc);
             this._rpc.addEventListener('init', this._onClientInit.bind(this));

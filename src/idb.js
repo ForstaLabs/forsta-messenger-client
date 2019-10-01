@@ -529,9 +529,6 @@
                         skipped++;
                         cursor.continue(); // We need to move the cursor forward
                     } else {
-                        if (kwargs.hasFilter) {
-                            debugger;
-                        }
                         if (!kwargs.hasFilter || await this._rpc.invokeCommand(filterCommand, cursor.value)) {
                             processed++;
                             elements.push(cursor.value);

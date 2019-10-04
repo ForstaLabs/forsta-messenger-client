@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Tutorial: Hello World - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="forsta.messenger.Client.html">Client</a><ul class='methods'><li data-type='method'><a href="forsta.messenger.Client.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#navPanelToggle">navPanelToggle</a></li><li data-type='method'><a href="forsta.messenger.Client.html#removeEventListener">removeEventListener</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadGetAttribute">threadGetAttribute</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadList">threadList</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadListAttributes">threadListAttributes</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadOpen">threadOpen</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadSetAttribute">threadSetAttribute</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadSetExpiration">threadSetExpiration</a></li><li data-type='method'><a href="forsta.messenger.Client.html#threadStartWithExpression">threadStartWithExpression</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="global.html#event:init">init</a></li><li><a href="global.html#event:loaded">loaded</a></li><li><a href="global.html#event:provisioningdone">provisioningdone</a></li><li><a href="global.html#event:provisioningerror">provisioningerror</a></li><li><a href="global.html#event:provisioningrequired">provisioningrequired</a></li><li><a href="global.html#event:thread-message">thread-message</a></li></ul><h3>Namespaces</h3><ul><li><a href="forsta.html">forsta</a></li><li><a href="forsta.messenger.html">messenger</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Hello World.html">Hello World</a></li></ul><h3><a href="global.html">Global</a></h3>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Tutorial: Hello World</h1>
+    
+
+    <section>
+
+<header>
+    
+
+    <h2>Hello World</h2>
+</header>
+
+<article>
+    <p>The <code>forsta-messenger-client</code> JavaScript API allows you to run and control a
+Forsta Messenger client inside your own website.  Seamless integration is possible so your
+web application is instantly upgraded to have secure end to end encrypted messaging capabilities.</p>
+<p>To get started you need to include the Forsta messenger client JavaScript file into your website.
+There are several choices for how you bundle or load the library.  The simplest method is to
+add a <code>&lt;script&gt;</code> tag to your own HTML source that sets the <code>src</code> attribute to a publicly available
+distribution.  We'll just use the GitHub hosted distribution for this example, but you could just
+as easily install the library from NPM and bundle the <code>dist/forsta-messenger-client.min.js</code> with your
+existing web JS.</p>
+<pre class="prettyprint source lang-html"><code>&lt;html>
+    &lt;head>
+        &lt;script src=&quot;https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js&quot;>&lt;/script>
+    &lt;/head>
+&lt;/html>
+</code></pre>
+<p>Once the JavaScript library is included in your website you will have access to the
+<a href="forsta.messenger.html"><code>forsta.messenger</code></a> namespace in your <code>window</code> object.  The first thing we want to
+look at is the <a href="forsta.messenger.Client.html"><code>forsta.messenger.Client</code></a> class which is the primary interface for
+loading and controlling the messenger client.</p>
+<p>We need to instantiate this class with a couple arguments.  The first is the HTML element
+where we should load the messenger.  The second argument is a <a href="global.html#ClientAuth"><code>ClientAuth</code></a> configuration
+object used for controlling user authentication (or creation).</p>
+<pre class="prettyprint source lang-html"><code>&lt;body>
+    &lt;div id=&quot;my-messenger&quot; style=&quot;width: 80%; height: 80%;&quot;>&lt;/div>
+&lt;/body>
+
+&lt;script>
+    const myClient = new forsta.messenger.Client(document.getElementById('my-messenger'),
+                                                 {orgEphemeralToken: 'TESTING'});
+&lt;/script>
+</code></pre>
+<p>For more information on the org ephemeral token: <a href="https://app.forsta.io/authtokens">https://app.forsta.io/authtokens</a></p>
+<p>Now that your client is instantiated you should see a messenger loaded into the div tag provided in
+the first argument.  The <code>myClient</code> variable provides access to events and control functions.</p>
+</article>
+
+</section>
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.3</a> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
+
+<link type="text/css" rel="stylesheet" href="../../css/jsdoc-overrides.css"/>
+<link id="favicon" rel="shortcut icon" href="../../images/icon_256.png"/>
+<script src="../../js/jsdoc-overrides.js"></script>

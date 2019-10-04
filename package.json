@@ -26,6 +26,6 @@
     "jsdoc": "3.6.3"
   },
   "dependencies": {
-    "ifrpc": "1.3.0"
+    "ifrpc": "2.0.0"
   }
 }

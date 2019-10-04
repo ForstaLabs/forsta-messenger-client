@@ -5,8 +5,8 @@
 
     const ns = self.ifrpc = self.ifrpc || {};
 
-    const version = 2;
-    const defaultPeerOrigin = '*'; // XXX default to more secure option
+    const version = 3;
+    const defaultPeerOrigin = '*';
     const defaultMagic = 'ifrpc-magic-494581011';
 
     let _idInc = 0;
@@ -29,45 +29,18 @@
 
 
     class RPC {
+
         constructor(peerFrame, options) {
             options = options || {};
             this.peerFrame = peerFrame;
             this.magic = options.magic || defaultMagic;
             this.peerOrigin = options.peerOrigin || defaultPeerOrigin;
+            this.acceptOpener = !!options.acceptOpener;
+            this.acceptParent = !!options.acceptParent;
             this.commands = new Map();
             this.listeners = new Map();
             this.activeCommandRequests = new Map();
-            self.addEventListener('message', async ev => {
-                if (ev.source !== this.peerFrame) {
-                    return;
-                }
-                if (this.peerOrigin !== '*' && ev.origin !== this.peerOrigin) {
-                    console.warn("Message from untrusted origin:", ev.origin);
-                    return;
-                }
-                const data = ev.data;
-                if (!data || data.magic !== this.magic) {
-                    console.error("Invalid ifrpc magic");
-                    return;
-                }
-                if (data.version !== version) {
-                    console.error(`Version mismatch: expected ${version} but got ${data.version}`);
-                    return;
-                }
-                if (data.op === 'command') {
-                    if (data.dir === 'request') {
-                        await this.handleCommandRequest(ev);
-                    } else if (data.dir === 'response') {
-                        await this.handleCommandResponse(ev);
-                    } else {
-                        throw new Error("Command Direction Missing");
-                    }
-                } else if (data.op === 'event') {
-                    await this.handleEvent(ev);
-                } else {
-                    throw new Error("Invalid ifrpc Operation");
-                }
-            });
+            this.constructor.registerMessageHandler(this);
 
             // Couple meta commands for discovery...
             this.addCommandHandler('ifrpc-get-commands', () => {
@@ -76,6 +49,57 @@
             this.addCommandHandler('ifrpc-get-listeners', () => {
                 return Array.from(this.listeners.keys());
             });
+        }
+
+        static registerMessageHandler(rpc) {
+            if (!this._registered) {
+                self.addEventListener('message', this.onMessage.bind(this));
+                this._registered = [];
+            }
+            this._registered.push(rpc);
+        }
+
+        static async onMessage(ev) {
+            if (!ev.source) {
+                return;  // Source frame is gone already.
+            }
+            for (const rpc of this._registered) {
+                if (rpc.peerOrigin !== '*' && ev.origin !== rpc.peerOrigin) {
+                    continue;
+                }
+                const validFrames = new Set([ev.source]);
+                if (rpc.acceptOpener && ev.source.opener) {
+                    validFrames.add(ev.source.opener);
+                }
+                if (rpc.acceptParent && ev.source.parent) {
+                    validFrames.add(ev.source.parent);
+                }
+                if (!validFrames.has(rpc.peerFrame)) {
+                    continue;
+                }
+                const data = ev.data;
+                if (!data || data.magic !== rpc.magic) {
+                    console.warn("Invalid ifrpc magic");
+                    continue;
+                }
+                if (data.version !== version) {
+                    console.error(`Version mismatch: expected ${version} but got ${data.version}`);
+                    continue;
+                }
+                if (data.op === 'command') {
+                    if (data.dir === 'request') {
+                        await rpc.handleCommandRequest(ev);
+                    } else if (data.dir === 'response') {
+                        await rpc.handleCommandResponse(ev);
+                    } else {
+                        throw new Error("Command Direction Missing");
+                    }
+                } else if (data.op === 'event') {
+                    await rpc.handleEvent(ev);
+                } else {
+                    throw new Error("Invalid ifrpc Operation");
+                }
+            }
         }
 
         addCommandHandler(name, handler) {
@@ -101,22 +125,26 @@
             this.listeners.set(name, scrubbed);
         }
 
-        triggerEvent(name) {
-            const args = Array.from(arguments).slice(1);
-            this.sendMessage({
+        triggerEventWithFrame(frame, name) {
+            const args = Array.from(arguments).slice(2);
+            this.sendMessage(frame, {
                 op: 'event',
                 name,
                 args
             });
         }
 
-        async invokeCommand(name) {
-            const args = Array.from(arguments).slice(1);
+        triggerEvent(name) {
+            return this.triggerEventWithFrame.apply(this, [this.peerFrame].concat(Array.from(arguments)));
+        }
+
+        async invokeCommandWithFrame(frame, name) {
+            const args = Array.from(arguments).slice(2);
             const id = `${Date.now()}-${_idInc++}`;
             const promise = new Promise((resolve, reject) => {
                 this.activeCommandRequests.set(id, {resolve, reject});
             });
-            this.sendMessage({
+            this.sendMessage(frame, {
                 op: 'command',
                 dir: 'request',
                 name,
@@ -126,16 +154,20 @@
             return await promise;
         }
 
-        sendMessage(data) {
+        async invokeCommand(name) {
+            return await this.invokeCommandWithFrame.apply(this, [this.peerFrame].concat(Array.from(arguments)));
+        }
+
+        sendMessage(frame, data) {
             const msg = Object.assign({
                 magic: this.magic,
                 version
             }, data);
-            this.peerFrame.postMessage(msg, this.peerOrigin);
+            frame.postMessage(msg, this.peerOrigin);
         }
 
         sendCommandResponse(ev, success, response) {
-            this.sendMessage({
+            this.sendMessage(ev.source, {
                 op: 'command',
                 dir: 'response',
                 name: ev.data.name,
@@ -363,7 +395,7 @@ forsta.messenger = forsta.messenger || {};
                 this._iframe.setAttribute('allowfullscreen', 'true');
             }
             const url = this.options.url || 'https://app.forsta.io/@';
-            this._iframe.setAttribute('src', `${url}?managed`);
+            this._iframe.src = `${url}?managed`;
             el.appendChild(this._iframe);
             this._iframe.contentWindow.addEventListener('beforeunload', ev => {
                 console.error("before unload");
@@ -375,10 +407,11 @@ forsta.messenger = forsta.messenger || {};
                 console.error("unload");
             });
             this._iframe.contentWindow.addEventListener('load', ev => {
-                console.error("load");
+                console.error("load", this._iframe.src, this._iframe.getAttribute('src'));
             });
             this._iframe.addEventListener('load', ev => {
                 console.error("load iframe", ev);
+                console.error("load iframe", this._iframe.src, this._iframe.getAttribute('src'));
             });
             this._iframe.addEventListener('loadstart', ev => {
                 console.error("loadstart iframe");
@@ -386,31 +419,40 @@ forsta.messenger = forsta.messenger || {};
             this._iframe.addEventListener('loadend', ev => {
                 console.error("loadend iframe");
             });
-            this._rpc = ifrpc.init(this._iframe.contentWindow);
+            this._rpc = ifrpc.init(this._iframe.contentWindow, {acceptOpener: true});
             this._idbGateway = new ns.IDBGateway(this._rpc);
-            this._rpc.addEventListener('init', this._onClientInit.bind(this));
+            const _this = this;
+            this._rpc.addEventListener('init', function(data) {
+                const ev = this;
+                _this._onClientInit(ev.source, data);
+            });
             if (this.onLoaded) {
                 this._rpc.addEventListener('loaded', () => this.onLoaded(this));
             }
         }
 
-        async _onClientInit() {
-            await this._rpc.invokeCommand('configure', {
-                auth: this.auth,
-                showNav: !!this.options.showNav,
-                showHeader: !!this.options.showHeader,
-                showThreadAside: !!this.options.showThreadAside,
-                showThreadHeader: !!this.options.showThreadHeader,
-                ephemeralUser: this.options.ephemeralUserInfo,
-                openThreadId: this.options.openThreadId,
-            });
-            if (this._rpcEarlyEvents) {
-                for (const x of this._rpcEarlyEvents) {
-                    this._rpc.addEventListener(x.event, x.callback);
+        async _onClientInit(frame, data) {
+            const config = {
+                auth: this.auth
+            };
+            if (data.scope === 'main') {
+                Object.assign(config, {
+                    showNav: !!this.options.showNav,
+                    showHeader: !!this.options.showHeader,
+                    showThreadAside: !!this.options.showThreadAside,
+                    showThreadHeader: !!this.options.showThreadHeader,
+                    ephemeralUser: this.options.ephemeralUserInfo,
+                    openThreadId: this.options.openThreadId,
+                });
+                if (this._rpcEarlyEvents) {
+                    for (const x of this._rpcEarlyEvents) {
+                        this._rpc.addEventListener(x.event, x.callback);
+                    }
+                    delete this._rpcEarlyEvents;
                 }
-                delete this._rpcEarlyEvents;
             }
-            if (this.onInit) {
+            await this._rpc.invokeCommandWithFrame(frame, 'configure', config);
+            if (data.scope === 'main' && this.onInit) {
                 await this.onInit(this);
             }
         }

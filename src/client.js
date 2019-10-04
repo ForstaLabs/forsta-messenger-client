@@ -170,7 +170,7 @@ forsta.messenger = forsta.messenger || {};
                 this._iframe.setAttribute('allowfullscreen', 'true');
             }
             const url = this.options.url || 'https://app.forsta.io/@';
-            this._iframe.setAttribute('src', `${url}?managed`);
+            this._iframe.src = `${url}?managed`;
             el.appendChild(this._iframe);
             this._iframe.contentWindow.addEventListener('beforeunload', ev => {
                 console.error("before unload");
@@ -182,10 +182,11 @@ forsta.messenger = forsta.messenger || {};
                 console.error("unload");
             });
             this._iframe.contentWindow.addEventListener('load', ev => {
-                console.error("load");
+                console.error("load", this._iframe.src, this._iframe.getAttribute('src'));
             });
             this._iframe.addEventListener('load', ev => {
                 console.error("load iframe", ev);
+                console.error("load iframe", this._iframe.src, this._iframe.getAttribute('src'));
             });
             this._iframe.addEventListener('loadstart', ev => {
                 console.error("loadstart iframe");
@@ -195,29 +196,38 @@ forsta.messenger = forsta.messenger || {};
             });
             this._rpc = ifrpc.init(this._iframe.contentWindow);
             this._idbGateway = new ns.IDBGateway(this._rpc);
-            this._rpc.addEventListener('init', this._onClientInit.bind(this));
+            const _this = this;
+            this._rpc.addEventListener('init', function(data) {
+                const ev = this;
+                _this._onClientInit(ev.source, data);
+            });
             if (this.onLoaded) {
                 this._rpc.addEventListener('loaded', () => this.onLoaded(this));
             }
         }
 
-        async _onClientInit() {
-            await this._rpc.invokeCommand('configure', {
-                auth: this.auth,
-                showNav: !!this.options.showNav,
-                showHeader: !!this.options.showHeader,
-                showThreadAside: !!this.options.showThreadAside,
-                showThreadHeader: !!this.options.showThreadHeader,
-                ephemeralUser: this.options.ephemeralUserInfo,
-                openThreadId: this.options.openThreadId,
-            });
-            if (this._rpcEarlyEvents) {
-                for (const x of this._rpcEarlyEvents) {
-                    this._rpc.addEventListener(x.event, x.callback);
+        async _onClientInit(frame, data) {
+            const config = {
+                auth: this.auth
+            };
+            if (data.scope === 'main') {
+                Object.assign(config, {
+                    showNav: !!this.options.showNav,
+                    showHeader: !!this.options.showHeader,
+                    showThreadAside: !!this.options.showThreadAside,
+                    showThreadHeader: !!this.options.showThreadHeader,
+                    ephemeralUser: this.options.ephemeralUserInfo,
+                    openThreadId: this.options.openThreadId,
+                });
+                if (this._rpcEarlyEvents) {
+                    for (const x of this._rpcEarlyEvents) {
+                        this._rpc.addEventListener(x.event, x.callback);
+                    }
+                    delete this._rpcEarlyEvents;
                 }
-                delete this._rpcEarlyEvents;
             }
-            if (this.onInit) {
+            await this._rpc.invokeCommandWithFrame(frame, 'configure', config);
+            if (data.scope === 'main' && this.onInit) {
                 await this.onInit(this);
             }
         }

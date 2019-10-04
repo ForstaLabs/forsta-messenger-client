@@ -194,7 +194,7 @@ forsta.messenger = forsta.messenger || {};
             this._iframe.addEventListener('loadend', ev => {
                 console.error("loadend iframe");
             });
-            this._rpc = ifrpc.init(this._iframe.contentWindow);
+            this._rpc = ifrpc.init(this._iframe.contentWindow, {acceptOpener: true});
             this._idbGateway = new ns.IDBGateway(this._rpc);
             const _this = this;
             this._rpc.addEventListener('init', function(data) {

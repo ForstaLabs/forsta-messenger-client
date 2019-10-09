@@ -561,14 +561,6 @@
         objectStoreNamesHandler() {
             return Array.from(this.db.objectStoreNames);
         }
-
-        close() {
-            // XXX PORT
-            console.error('XXX PORT');
-            if (this.db) {
-                this.db.close();
-            }
-        }
     }
 
     forsta.messenger.IDBGateway = class IDBGateway {
@@ -579,10 +571,7 @@
         }
 
         async onInitHandler(kwargs) {
-            if (this._initialized.has(kwargs.name)) {
-                console.error("DB already initialized:", kwargs.name);
-                return;
-            } else {
+            if (!this._initialized.has(kwargs.name)) {
                 const driver = new IDBDriver(kwargs.name, kwargs.id, kwargs.version, this._rpc);
                 await driver.init();
                 this._initialized.set(kwargs.name, driver);

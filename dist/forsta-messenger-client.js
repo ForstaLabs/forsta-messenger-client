@@ -394,31 +394,8 @@ forsta.messenger = forsta.messenger || {};
                 // Legacy fullscreen mode required too.
                 this._iframe.setAttribute('allowfullscreen', 'true');
             }
-            const url = this.options.url || 'https://app.forsta.io/@';
-            this._iframe.src = `${url}?managed`;
+            this._iframe.src = this.options.url || 'https://app.forsta.io/@';
             el.appendChild(this._iframe);
-            this._iframe.contentWindow.addEventListener('beforeunload', ev => {
-                console.error("before unload");
-            });
-            this._iframe.contentWindow.addEventListener('unload', ev => {
-                console.error("unload");
-            });
-            this._iframe.contentWindow.addEventListener('unload', ev => {
-                console.error("unload");
-            });
-            this._iframe.contentWindow.addEventListener('load', ev => {
-                console.error("load", this._iframe.src, this._iframe.getAttribute('src'));
-            });
-            this._iframe.addEventListener('load', ev => {
-                console.error("load iframe", ev);
-                console.error("load iframe", this._iframe.src, this._iframe.getAttribute('src'));
-            });
-            this._iframe.addEventListener('loadstart', ev => {
-                console.error("loadstart iframe");
-            });
-            this._iframe.addEventListener('loadend', ev => {
-                console.error("loadend iframe");
-            });
             this._rpc = ifrpc.init(this._iframe.contentWindow, {acceptOpener: true});
             this._idbGateway = new ns.IDBGateway(this._rpc);
             const _this = this;
@@ -1138,14 +1115,6 @@ forsta.messenger = forsta.messenger || {};
         objectStoreNamesHandler() {
             return Array.from(this.db.objectStoreNames);
         }
-
-        close() {
-            // XXX PORT
-            console.error('XXX PORT');
-            if (this.db) {
-                this.db.close();
-            }
-        }
     }
 
     forsta.messenger.IDBGateway = class IDBGateway {
@@ -1156,10 +1125,7 @@ forsta.messenger = forsta.messenger || {};
         }
 
         async onInitHandler(kwargs) {
-            if (this._initialized.has(kwargs.name)) {
-                console.error("DB already initialized:", kwargs.name);
-                return;
-            } else {
+            if (!this._initialized.has(kwargs.name)) {
                 const driver = new IDBDriver(kwargs.name, kwargs.id, kwargs.version, this._rpc);
                 await driver.init();
                 this._initialized.set(kwargs.name, driver);

@@ -1,6 +1,6 @@
 {
   "name": "forsta-messenger-client",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Forsta Messenger Client",
   "main": "index.js",
   "repository": {
@@ -26,6 +26,6 @@
     "jsdoc": "3.6.3"
   },
   "dependencies": {
-    "ifrpc": "1.2.1"
+    "ifrpc": "2.0.0"
   }
 }

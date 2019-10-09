@@ -6,19 +6,14 @@
                 console.warn("It initialized:", client);
             }
 
-            async function onLoaded(client) {
-                console.warn("It loaded:", client);
-                await client.threadSetExpiration('@jeb');
-            }
-
             addEventListener('load', () => {
                 const client = new forsta.messenger.Client(
                     document.querySelector('#client'),
                     {orgEphemeralToken: 'TESTING'},
                     {
                         onInit,
-                        openThreadId: null,  // Force open of welcome screen.
-                        onLoaded,
+                        showNav: true,
+                        showHeader: true,
                         url: 'http://localhost:1080/@'
                     }
                 );
@@ -33,7 +28,7 @@
         </script>
     </head>
     <body>
-        <div id="client" style="height: 60%; margin: 1em;"></div>
+        <div id="client" style="height: 80%; margin: 1em;"></div>
         <div style="background: black; color: white; padding: 1em; margin: 1em;">
             <button id="toggle-nav-panel">Toggle Nav</button>
         </div>

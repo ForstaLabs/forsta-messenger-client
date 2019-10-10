@@ -13,6 +13,15 @@ self.forsta = self.forsta || {};
 forsta.messenger = forsta.messenger || {};
 
 
+/**
+ * @typedef {Object} ThreadAttributes
+ * @property {string} id - The thread identifier (UUID).
+ * @property {('conversation'|'announcement')} type - The type of thread this is.
+ * @property {string} title - Optional title for this thread.
+ * @property {string} distribution - The normalized tag expression for this thread.
+ */
+
+
 (function() {
     'use strict';
 
@@ -80,8 +89,8 @@ forsta.messenger = forsta.messenger || {};
          *
          * @event thread-message
          * @type {object}
-         * @property {string} id - The message id.
-         * @property {string} threadId - The id of the thread this message belongs to.
+         * @property {string} id - The message ID.
+         * @property {string} threadId - The ID of the thread this message belongs to.
          */
 
         /**
@@ -251,15 +260,43 @@ forsta.messenger = forsta.messenger || {};
         }
 
         /**
-         * Select or create a conversation thread.  If the tag `expression` argument matches an
+         * Select or create a thread.  If the tag `expression` argument matches an
          * existing thread it will be opened, otherwise a new thread will be created.
          *
          * @param {string} expression - The {@link TagExpression} for the desired thread's
          *                              distribution.
-         * @returns {string} The threadId that was opened.
+         * @param {ThreadAttributes} [attrs] - Optional attributes to be applied to the resulting
+         *                                     thread.
+         * @returns {string} The thread ID that was opened or created.
          */
-        async threadStartWithExpression(expression) {
-            return await this._rpc.invokeCommand('thread-join', expression);
+        async threadStartWithExpression(expression, attrs) {
+            const id = await this._rpc.invokeCommand('thread-ensure', expression, attrs);
+            await this._rpc.invokeCommand('thread-open', id);
+            return id;
+        }
+
+        /**
+         * Ensure that a thread exists matching the expression argument.
+         *
+         * @param {string} expression - The {@link TagExpression} for the thread's distribution.
+         * @param {ThreadAttributes} [attrs] - Optional attributes to be applied to the resulting
+         *                                     thread.
+         * @returns {string} The thread ID created or matching the expression provided.
+         */
+        async threadEnsure(expression, attrs) {
+            return await this._rpc.invokeCommand('thread-ensure', expression, attrs);
+        }
+
+        /**
+         * Make a new thread.
+         *
+         * @param {string} expression - The {@link TagExpression} for the thread's distribution.
+         * @param {ThreadAttributes} [attrs] - Optional attributes to be applied to the resulting
+         *                                     thread.
+         * @returns {string} The thread ID created or matching the expression provided.
+         */
+        async threadMake(expression, attrs) {
+            return await this._rpc.invokeCommand('thread-make', expression, attrs);
         }
 
         /**
@@ -297,6 +334,7 @@ forsta.messenger = forsta.messenger || {};
          * List the attributes of a thread.
          *
          * @param {string} id - The thread ID to update.
+         *
          * @returns {string[]} - List of thread attibutes.
          */
         async threadListAttributes(threadId) {
@@ -308,6 +346,7 @@ forsta.messenger = forsta.messenger || {};
          *
          * @param {string} id - The thread ID to update.
          * @param {string} attr - The thread attribute to get.
+         *
          * @returns {*} - The value of the thread attribute.
          */
         async threadGetAttribute(threadId, attr) {
@@ -322,7 +361,70 @@ forsta.messenger = forsta.messenger || {};
          * @param {*} value - The value to set.
          */
         async threadSetAttribute(threadId, attr, value) {
-            return await this._rpc.invokeCommand('thread-set-attribute', threadId, attr, value);
+            await this._rpc.invokeCommand('thread-set-attribute', threadId, attr, value);
+        }
+
+        /**
+         * Archive a thread.
+         *
+         * @param {string} id - The thread ID to archive.
+         */
+        async threadArchive(id, options) {
+            await this._rpc.invokeCommand('thread-archive', id, options);
+        }
+
+        /**
+         * Restore an archived thread to normal status.
+         *
+         * @param {string} id - The thread ID to restore from the archives.
+         */
+        async threadRestore(id, options) {
+            await this._rpc.invokeCommand('thread-restore', id, options);
+        }
+
+        /**
+         * Expunging a thread deletes it and all its messages forever.
+         *
+         * @param {string} id - The thread ID to expunge.
+         */
+        async threadExpunge(id, options) {
+            await this._rpc.invokeCommand('thread-expunge', id, options);
+        }
+
+        /**
+         * Delete local copy of messages for a thread.
+         *
+         * @param {string} id - The thread ID to delete messages from.
+         */
+        async threadDestroyMessages(id) {
+            await this._rpc.invokeCommand('thread-destroy-messages', id);
+        }
+
+        /**
+         * Send a message to a thread.
+         *
+         * @param {string} id - The thread ID to send a message to.
+         * @param {string} plainText - Plain text message to send.
+         * @param {string} [html] - HTML version of message to send.
+         * @param {Array} [attachments] - Array of attachment objects.
+         * @param {Object} [attrs] - Message attributes.
+         * @param {Object} [options] - Send options.
+         *
+         * @returns {string} - The ID of the message sent.
+         */
+        async threadSendMessage(id, plainText, html, attachments, attrs, options) {
+            return await this._rpc.invokeCommand('thread-send-message', id, plainText, html, attachments, attrs, options);
+        }
+
+        /**
+         * Send a thread update to members of a thread.
+         *
+         * @param {string} id - The thread ID to send a message to.
+         * @param {Object} updates - Object containing the update key/value pairs.
+         * @param {Object} [options] - Options for the thread update.
+         */
+        async threadSendUpdate(id, updates, options) {
+            return await this._rpc.invokeCommand('thread-send-update', id, updates, options);
         }
     };
 })();

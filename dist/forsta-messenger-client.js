@@ -239,6 +239,8 @@ forsta.messenger = forsta.messenger || {};
 
 
 /**
+ * The various internal attributes a thread model has.
+ *
  * @typedef {Object} ThreadAttributes
  * @property {string} id - The thread identifier (UUID).
  * @property {('conversation'|'announcement')} type - The type of thread this is.
@@ -246,6 +248,46 @@ forsta.messenger = forsta.messenger || {};
  * @property {string} distribution - The normalized tag expression for this thread.
  */
 
+
+/**
+ * A case-sensitive string value in UUID format.  E.g. "93fad4a7-bfa6-4f84-ab4d-4ed67e1d2658"
+ *
+ * @typedef {string} UUID
+ */
+
+/**
+ * Milliseconds since Jan 1 1970 UTC.
+ *
+ * @typedef {number} Timestamp
+ */
+
+/**
+ * The ID for a user in the Forsta ecosystem.
+ *
+ * @typedef {UUID} UserID
+ */
+
+/**
+ * The ID for a messaging thread.  Every thread must have a unique identifier which is shared
+ * amongst peers to distinguish conversations.
+ *
+ * @typedef {UUID} ThreadID
+ */
+
+/**
+ * The ID for a message.
+ *
+ * @typedef {UUID} MessageID
+ */
+
+
+/**
+ * Forsat JSON message exchange payload.  This is the main specification for how messages must be formatted
+ * for communication in the Forsta ecosystem.
+ *
+ * @external ExchangePayload
+ * @see {@link https://docs.google.com/document/d/e/2PACX-1vTv9Bahr0MyWiZT6B2xvUpBj0c3NGne0ZPeU40Kyn0UHMlYXVlEb1U5jgVCI0t9FkChVwYRCwTBTTiY/pub}
+ */
 
 (function() {
     'use strict';
@@ -259,6 +301,7 @@ forsta.messenger = forsta.messenger || {};
      * @fires init
      * @fires loaded
      * @fires thread-message
+     * @fires thread-message-readmark
      * @fires provisioningrequired
      * @fires provisioningerror
      * @fires provisioningdone
@@ -314,8 +357,21 @@ forsta.messenger = forsta.messenger || {};
          *
          * @event thread-message
          * @type {object}
-         * @property {string} id - The message ID.
-         * @property {string} threadId - The ID of the thread this message belongs to.
+         * @property {MessageID} id - The message ID.
+         * @property {ThreadID} threadId - The ID of the thread this message belongs to.
+         */
+
+        /**
+         * Thread message readmark change event.  Read marks indicate the most recent messages read
+         * by a peer for a given thread.  They are timestamp values that correspond to the message
+         * timestamps.
+         *
+         * @event thread-message-readmark
+         * @type {object}
+         * @property {ThreadID} threadId - The ID of the thread this readmark pertains to.
+         * @property {UserID} source - The peer user id that sent the readmark.
+         * @property {Timestamp} readmark - The timestamp of the readmark.  E.g. How far the user
+         *                                  has read to.
          */
 
         /**
@@ -353,9 +409,9 @@ forsta.messenger = forsta.messenger || {};
          * @property {bool} showThreadHeader - Unhide the thread header panel.
          * @property {EphemeralUserInfo} ephemeralUserInfo - Details about the ephemeral user to be created or used.
          *                                                   Only relevant when orgEphemeralToken auth is used.
-         * @property {null|string} openThreadId - Force the messenger to open a specific thread on
-         *                                        startup.  If the value is `null` it will force
-         *                                        the messenger to not open any thread.
+         * @property {null|ThreadID} openThreadId - Force the messenger to open a specific thread on
+         *                                          startup.  If the value is `null` it will force
+         *                                          the messenger to not open any thread.
          */
 
 
@@ -558,7 +614,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * List the attributes of a thread.
          *
-         * @param {string} id - The thread ID to update.
+         * @param {ThreadID} id - The thread ID to update.
          *
          * @returns {string[]} - List of thread attibutes.
          */
@@ -569,7 +625,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * Get the value of a thread attribute.
          *
-         * @param {string} id - The thread ID to update.
+         * @param {ThreadID} id - The thread ID to update.
          * @param {string} attr - The thread attribute to get.
          *
          * @returns {*} - The value of the thread attribute.
@@ -581,7 +637,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * Set the value of a thread attribute.
          *
-         * @param {string} id - The thread ID to update.
+         * @param {ThreadID} id - The thread ID to update.
          * @param {string} attr - The thread attribute to update.
          * @param {*} value - The value to set.
          */
@@ -592,7 +648,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * Archive a thread.
          *
-         * @param {string} id - The thread ID to archive.
+         * @param {ThreadID} id - The thread ID to archive.
          */
         async threadArchive(id, options) {
             await this._rpc.invokeCommand('thread-archive', id, options);
@@ -601,7 +657,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * Restore an archived thread to normal status.
          *
-         * @param {string} id - The thread ID to restore from the archives.
+         * @param {ThreadID} id - The thread ID to restore from the archives.
          */
         async threadRestore(id, options) {
             await this._rpc.invokeCommand('thread-restore', id, options);
@@ -610,7 +666,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * Expunging a thread deletes it and all its messages forever.
          *
-         * @param {string} id - The thread ID to expunge.
+         * @param {ThreadID} id - The thread ID to expunge.
          */
         async threadExpunge(id, options) {
             await this._rpc.invokeCommand('thread-expunge', id, options);
@@ -619,7 +675,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * Delete local copy of messages for a thread.
          *
-         * @param {string} id - The thread ID to delete messages from.
+         * @param {ThreadID} id - The thread ID to delete messages from.
          */
         async threadDestroyMessages(id) {
             await this._rpc.invokeCommand('thread-destroy-messages', id);
@@ -628,7 +684,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * Send a message to a thread.
          *
-         * @param {string} id - The thread ID to send a message to.
+         * @param {ThreadID} id - The thread ID to send a message to.
          * @param {string} plainText - Plain text message to send.
          * @param {string} [html] - HTML version of message to send.
          * @param {Array} [attachments] - Array of attachment objects.
@@ -642,10 +698,26 @@ forsta.messenger = forsta.messenger || {};
         }
 
         /**
+         * Send a control message to a thread.
+         *
+         * @param {ThreadID} id - The thread ID to send a message to.
+         * @param {Object} data - Object containing the control information.  Read {@link external:ExchangePayload}
+         *                        for more information on control messages.
+         * @param {Array} [attachments] - Array of attachment objects.
+         * @param {Object} [options] - Send options.
+         *
+         * @returns {string} - The ID of the message sent.
+         */
+        async threadSendControl(id, data, attachments, options) {
+            return await this._rpc.invokeCommand('thread-send-control', id, data, attachments, options);
+        }
+
+        /**
          * Send a thread update to members of a thread.
          *
-         * @param {string} id - The thread ID to send a message to.
-         * @param {Object} updates - Object containing the update key/value pairs.
+         * @param {ThreadID} id - The thread ID to send a message to.
+         * @param {Object} updates - Object containing the update key/value pairs.  See the `threadUpdate`
+         *                           section of {@link external:ExchangePayload} for details.
          * @param {Object} [options] - Options for the thread update.
          */
         async threadSendUpdate(id, updates, options) {

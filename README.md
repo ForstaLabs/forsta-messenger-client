@@ -16,22 +16,22 @@ Messenger client into your web application.
 
 Install
 --------
-The forsta-messenger-client should be included with your webpages javascript.  It can be
-added as its own script tag or included with your existing javascript using some bundling
-software of your choosing, e.g. grunt, webpacket etc.  Depending on your desired installation
-and bundling method there are a few ways to get the forsta-messenger-client.
+The forsta-messenger-client should be included with your web page's javascript.  It can be
+added as its own `<script>` tag or included with your existing javascript using bundling
+software of your choosing a la., Grunt, Webpack, etc.  Depending on your desired installation
+and bundling method there are a few ways to get the forsta-messenger-client working.
 
 
-### From public CDN (standalone script tag) [easy]
-Add the following script tag to your site;  Note that this script will be the latest
+#### From public CDN (standalone script tag) [easy]
+Add the following script tag to your site.  _Note that this script will be the latest
 version of the forsta-messenger-client and you can not choose when version changes
-happen.
+happen._
 
 ```html
 <script src="https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js"></script>
 ```
 
-### NPM (for bundler based installs) [medium]:
+#### NPM (for bundler based installs) [medium]:
 
     npm install forsta-messenger-client
 
@@ -39,7 +39,7 @@ Then include the `node_modules/forsta-messenger-client/dist/forsta-messenger-cli
 into your javascript bundle.
 
 
-### Building from source [hard]:
+#### Building from source [hard]:
 
     git clone https://github.com/ForstaLabs/forsta-messenger-client
     cd forsta-messenger-client

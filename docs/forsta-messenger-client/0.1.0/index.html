@@ -66,21 +66,41 @@
 <p>This library can be bundled into your web application to integrate a Forsta
 Messenger client into your web application.</p>
 <h2>Install</h2>
-<p>The forsta messenger client should be included with your webpages javascript.  It can be
-added as its own script tag or included with your existing javascript using some bundling
-software of your choosing, e.g. grunt, webpacket etc.  Depending on your desired installation
-and bundling method there are a few ways to get the forsta messenger client.</p>
-<h3>From public CDN (standalone script tag) [easy]</h3>
-<p>Add the following script tag to your site;  Note that this script will be the latest
+<p>The forsta-messenger-client should be included with your web page's javascript.  It can be
+added as its own <code>&lt;script&gt;</code> tag or included with your existing javascript using bundling
+software of your choosing a la., Grunt, Webpack, etc.  Depending on your desired installation
+and bundling method there are a few ways to get the forsta-messenger-client working.</p>
+<h4>From public CDN (standalone script tag) [easy]</h4>
+<p>Add the following script tag to your site.  <em>Note that this script will be the latest
 version of the forsta-messenger-client and you can not choose when version changes
-happen.</p>
+happen.</em></p>
 <pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js&quot;>&lt;/script>
 </code></pre>
-<h3>NPM (for bundler based installs) [medium]:</h3>
+<h4>NPM (for bundler based installs) [medium]:</h4>
 <pre><code>npm install forsta-messenger-client
 </code></pre>
 <p>Then include the <code>node_modules/forsta-messenger-client/dist/forsta-messenger-client.js</code> file
-into your javascript bundle.</p></article>
+into your javascript bundle.</p>
+<h4>Building from source [hard]:</h4>
+<pre><code>git clone https://github.com/ForstaLabs/forsta-messenger-client
+cd forsta-messenger-client
+npm install
+</code></pre>
+<p>To generate a build from the <code>src/</code> files run:</p>
+<pre><code>npm run build
+</code></pre>
+<p>To generate docs:</p>
+<pre><code>npm run docs
+</code></pre>
+<p>Docs are located in the <code>docs/forsta-messenger-client/&lt;version&gt;</code> folder.</p>
+<h2>Usage:</h2>
+<p>See our generated reference docs for full usage details:
+https://forstalabs.github.io/forsta-messenger-client/docs/index.html</p>
+<h2>License</h2>
+<p>Licensed under the MIT License.</p>
+<ul>
+<li>Copyright 2019 Forsta Inc.</li>
+</ul></article>
     </section>
 
 

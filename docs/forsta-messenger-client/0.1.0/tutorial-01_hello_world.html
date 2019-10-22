@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>Home - Documentation</title>
+    <title>Tutorial: Hello World - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,81 +32,59 @@
 
 <div id="main">
     
-
+    <h1 class="page-title">Tutorial: Hello World</h1>
     
 
+    <section>
 
-
+<header>
     
 
+    <h2>Hello World</h2>
+</header>
 
-    <section class="package">
-        <h3>forsta-messenger-client 0.1.0</h3>		
-    </section>
-
-
-
-
-
-
-
-
-
-    
-
-
-
-    <section class="readme">
-        <article><h1>forsta-messenger-client</h1>
-<p>Client library for integrating a Forsta messenger into your web application.</p>
-<p><a href="https://www.npmjs.com/package/forsta-messenger-client"><img src="https://img.shields.io/npm/v/forsta-messenger-client.svg" alt="NPM"></a>
-<a href="https://github.com/ForstaLabs/forsta-messenger-client"><img src="https://img.shields.io/npm/l/forsta-messenger-client.svg" alt="License"></a>
-<a href="https://forstalabs.github.io/forsta-messenger-client/docs/index.html"><img src="https://img.shields.io/badge/docs-api-lightgrey.svg" alt="Docs"></a></p>
-<h2>About</h2>
-<p>This library can be bundled into your web application to integrate a Forsta
-Messenger client into your web application.</p>
-<h2>Install</h2>
-<p>The forsta-messenger-client should be included with your web page's javascript.  It can be
-added as its own <code>&lt;script&gt;</code> tag or included with your existing javascript using bundling
-software of your choosing a la., Grunt, Webpack, etc.  Depending on your desired installation
-and bundling method there are a few ways to get the forsta-messenger-client working.</p>
-<h4>From public CDN (standalone script tag) [easy]</h4>
-<p>Add the following script tag to your site.  <em>Note that this script will be the latest
-version of the forsta-messenger-client and you can not choose when version changes
-happen.</em></p>
-<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js&quot;>&lt;/script>
+<article>
+    <p>The <code>forsta-messenger-client</code> JavaScript API allows you to run and control a
+Forsta Messenger client inside your own website.  Seamless integration is possible so your
+web application is instantly upgraded to have secure end to end encrypted messaging capabilities.</p>
+<p>To get started you need to include the Forsta messenger client JavaScript file into your website.
+There are several choices for how you bundle or load the library.  The simplest method is to
+add a <code>&lt;script&gt;</code> tag to your own HTML source that sets the <code>src</code> attribute to a publicly available
+distribution.  We'll just use the GitHub hosted distribution for this example, but you could just
+as easily install the library from NPM and bundle the <code>dist/forsta-messenger-client.min.js</code> with your
+existing web JS.</p>
+<pre class="prettyprint source lang-html"><code>&lt;html>
+    &lt;head>
+        &lt;script src=&quot;https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js&quot;>&lt;/script>
+    &lt;/head>
+&lt;/html>
 </code></pre>
-<h4>NPM (for bundler based installs) [medium]:</h4>
-<pre><code>npm install forsta-messenger-client
+<p>Once the JavaScript library is included in your website you will have access to the
+<a href="forsta.messenger.html"><code>forsta.messenger</code></a> namespace in your <code>window</code> object.  The first thing we want to
+look at is the <a href="forsta.messenger.Client.html"><code>forsta.messenger.Client</code></a> class which is the primary interface for
+loading and controlling the messenger client.</p>
+<p>We need to instantiate this class with a few arguments.  The first is the HTML element
+where we should load the messenger.  The second argument is a <a href="global.html#ClientAuth"><code>ClientAuth</code></a> configuration
+object used for controlling user authentication (or creation). The third is a <a href="global.html#ClientOptions"><code>ClientOptions</code></a>
+configuration object used for setting the client's initial state.</p>
+<pre class="prettyprint source lang-html"><code>&lt;body>
+    &lt;div id=&quot;my-messenger&quot; style=&quot;width: 80%; height: 80%;&quot;>&lt;/div>
+&lt;/body>
+
+&lt;script>
+    const myClient = new forsta.messenger.Client(document.getElementById('my-messenger'),
+                                                 {orgEphemeralToken: 'TESTING'},
+                                                 {showNav: true, showHeader: true});
+&lt;/script>
 </code></pre>
-<p>Then include the <code>node_modules/forsta-messenger-client/dist/forsta-messenger-client.js</code> file
-into your javascript bundle.</p>
-<h4>Building from source [hard]:</h4>
-<pre><code>git clone https://github.com/ForstaLabs/forsta-messenger-client
-cd forsta-messenger-client
-npm install
-</code></pre>
-<p>To generate a build from the <code>src/</code> files run:</p>
-<pre><code>npm run build
-</code></pre>
-<p>To generate docs:</p>
-<pre><code>npm run docs
-</code></pre>
-<p>Docs are located in the <code>docs/forsta-messenger-client/&lt;version&gt;</code> folder.</p>
-<h2>Usage:</h2>
-<p>See our generated reference docs for full usage details:
-https://forstalabs.github.io/forsta-messenger-client/docs/index.html</p>
-<h2>License</h2>
-<p>Licensed under the MIT License.</p>
-<ul>
-<li>Copyright 2019 Forsta Inc.</li>
-</ul></article>
-    </section>
+<p>For more information on the org ephemeral token: <a href="https://app.forsta.io/authtokens">https://app.forsta.io/authtokens</a></p>
+<p>Now that your client is instantiated you should see a messenger loaded into the div tag provided in
+the first argument.  The <code>myClient</code> variable provides access to events and control functions.</p>
+<p>Sample code is available at:
+<a href="https://github.com/ForstaLabs/forsta-messenger-client/tree/master/examples/hello">https://github.com/ForstaLabs/forsta-messenger-client/tree/master/examples/hello</a></p>
+</article>
 
-
-
-
-
+</section>
 
     
     

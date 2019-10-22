@@ -4,5 +4,8 @@
   },
   "02_ephemeral_user": {
     "title": "Ephemeral User"
+  },
+  "03_authenticated_user": {
+    "title": "Authenticated User"
   }
 }

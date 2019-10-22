@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <script src="https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js"></script>
+  </head>
+
+  <body>
+    <!-- Div that contains the Forsta messenger client -->
+    <div id="my-messenger" style="width: 80%; height: 80%; visibility: hidden;"></div>
+  </body>
+
+  <script>
+    function onProvisioningRequired() {
+      displayMessenger();
+    }
+
+    function onProvisioningError() {
+      alert("Provisioning Failed!");
+    }
+
+    function onProvisioningDone() {
+      alert("Provisioning Finished!");
+    }
+    
+    function displayMessenger() {
+      const messenger = document.getElementById("my-messenger");
+      messenger.style.visibility = "visible";
+    }
+    
+    async function onLoaded(client) {
+      threadId = await client.threadMake("@userinyourorg");
+      await client.threadOpen(threadId);
+      
+      displayMessenger();
+    }
+
+    // Configure the Forsta messenger client to use the div with id my-messenger
+    // And connect as an ephemeral user using the ephemeral chat token
+    const myClient = new forsta.messenger.Client(document.getElementById('my-messenger'),
+      { jwt: 'server generated jwt' },
+      { onLoaded: onLoaded, showNav: true, showHeader: true });
+    
+    myClient.addEventListener('provisioningrequired', onProvisioningRequired);
+    myClient.addEventListener('provisioningerror', onProvisioningError);
+    myClient.addEventListener('provisioningdone', onProvisioningDone);
+  </script>
+</html>

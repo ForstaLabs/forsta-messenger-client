@@ -1,4 +1,4 @@
-Please see the Hello World Tutorial for initial setup of the Forsta Messenger Client. Complete code for this tutorial is available at:
+Please see the [Hello World Tutorial]{@tutorial 01_hello_world} for initial setup of the Forsta Messenger Client. Complete code for this tutorial is available at:
 {@link https://github.com/ForstaLabs/forsta-messenger-client/tree/master/examples/ephemeral}
 
 The Forsta Messenger Client can be used with two different types of users:
@@ -32,28 +32,28 @@ This prevents the user from seeing the client until setup is complete.
 ```
 
 The Forsta Messenger Client includes several callbacks that can be configured when the
-client is initialized. In this case we will set the onLoaded callback to do the following:
+client is initialized. In this case we will set the `onLoaded` callback to do the following:
 
 - Create a new conversation thread with a tagged users
 - Open the thread in the client
 - Display the client once the thread is available
 
-First, create the onload callback. It uses the threadMake command to generate a new thread
+First, create the `onLoaded` callback. It uses the `threadMake` command to generate a new thread
 between the ephemeral user and one or more users defined by their tags. For more information
-on using tags see {@link https://docs.forsta.io/docs/tag-expressions}. Once a thread has been
+on using tags see [TagExpression]{@link external:TagExpression}. Once a thread has been
 created, it opens the thread in the client window and changes the visibility on the div to be visible.
 
 ```html
   async function onLoaded(client) {
-    thread_id = await client.threadMake("@support");
-    await client.threadOpen(thread_id);
+    threadId = await client.threadMake("@support");
+    await client.threadOpen(threadId);
       
-    var messenger = document.getElementById("my-messenger");
+    const messenger = document.getElementById("my-messenger");
     messenger.style.visibility = "visible";
   }
 ```
 
-Next, configure the client to use the call back by replacing the initialization script
+Next, configure the client to use the callback by replacing the initialization script
 with the following:
 
 ```html

@@ -57,11 +57,19 @@ forsta.messenger = forsta.messenger || {};
 
 
 /**
- * Forsat JSON message exchange payload.  This is the main specification for how messages must be formatted
+ * Forsta JSON message exchange payload.  This is the main specification for how messages must be formatted
  * for communication in the Forsta ecosystem.
  *
  * @external ExchangePayload
  * @see {@link https://docs.google.com/document/d/e/2PACX-1vTv9Bahr0MyWiZT6B2xvUpBj0c3NGne0ZPeU40Kyn0UHMlYXVlEb1U5jgVCI0t9FkChVwYRCwTBTTiY/pub}
+ */
+
+/**
+ * Forsta Tag Expression. This is the main specification for how tag expressions must be formatted
+ * in the Forsta ecosystem.
+ *
+ * @external TagExpression
+ * @see {@link https://docs.forsta.io/docs/tag-expressions}
  */
 
 (function() {
@@ -319,7 +327,7 @@ forsta.messenger = forsta.messenger || {};
          * Select or create a thread.  If the tag `expression` argument matches an
          * existing thread it will be opened, otherwise a new thread will be created.
          *
-         * @param {string} expression - The {@link TagExpression} for the desired thread's
+         * @param {string} expression - The [TagExpression]{@link external:TagExpression} for the desired thread's
          *                              distribution.
          * @param {ThreadAttributes} [attrs] - Optional attributes to be applied to the resulting
          *                                     thread.
@@ -334,7 +342,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * Ensure that a thread exists matching the expression argument.
          *
-         * @param {string} expression - The {@link TagExpression} for the thread's distribution.
+         * @param {string} expression - The [TagExpression]{@link external:TagExpression} for the thread's distribution.
          * @param {ThreadAttributes} [attrs] - Optional attributes to be applied to the resulting
          *                                     thread.
          * @returns {string} The thread ID created or matching the expression provided.
@@ -346,7 +354,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * Make a new thread.
          *
-         * @param {string} expression - The {@link TagExpression} for the thread's distribution.
+         * @param {string} expression - The [TagExpression]{@link external:TagExpression} for the thread's distribution.
          * @param {ThreadAttributes} [attrs] - Optional attributes to be applied to the resulting
          *                                     thread.
          * @returns {string} The thread ID created or matching the expression provided.

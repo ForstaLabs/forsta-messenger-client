@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>messenger - Documentation</title>
+    <title>Tutorial: Authenticated User - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,115 +32,106 @@
 
 <div id="main">
     
-    <h1 class="page-title">messenger</h1>
+    <h1 class="page-title">Tutorial: Authenticated User</h1>
     
 
-    
-
-
-
-
-<section>
+    <section>
 
 <header>
     
-        <h2>
-            <span class="ancestors"><a href="forsta.html">forsta</a>.</span>
-        
-        messenger
-        </h2>
-        
-    
+
+    <h2>Authenticated User</h2>
 </header>
 
 <article>
+    <p>This tutorial assumes you have already followed:</p>
+<ul>
+<li><a href="tutorial-01_hello_world.html">Hello World Tutorial</a></li>
+<li><a href="tutorial-02_ephemeral_user.html">Ephemeral User Tutorial</a></li>
+</ul>
+<p>Complete code for this tutorial is available at: <a href="https://github.com/ForstaLabs/forsta-messenger-client/tree/master/examples/authenticated_user">https://github.com/ForstaLabs/forsta-messenger-client/tree/master/examples/authenticated_user</a></p>
+<p>In the last tutorial we configured the client to use an ephemeral user who is
+created and logged in based on the org ephemeral token. However in production
+systems we recommend creating Forsta users using the Forsta Atlas API and
+libraries. In this tutorial we will discuss how to connect an authenticated user.</p>
+<p>You can create a user using either:</p>
+<ul>
+<li><a href="https://app.forsta.io/people">Forsta Console</a></li>
+<li><a href="https://atlas.forsta.io/doc/">Atlas API</a></li>
+</ul>
+<p>For a user to authenticate with the Forsta Messenger Client they need to provide
+a Forsta generated JWT (JSON Web Token). In a production system JWTs are generated
+by authenticating a user with a saved auth token. For testing purposes you can
+also generate a JWT with the following shell scripts:</p>
+<ul>
+<li><a href="https://github.com/ForstaLabs/developer-examples/blob/master/scripts/get_jwt.sh">JWT Generator</a></li>
+<li><a href="https://github.com/ForstaLabs/developer-examples/blob/master/scripts/forsta_library.sh">Required Forsta Script Library</a></li>
+</ul>
+<p>Once you have generated a jwt start with the following code that authenticates a user
+in the Forsta Messenger Client:</p>
+<pre class="prettyprint source lang-html"><code>&lt;html>
+  &lt;head>
+    &lt;script src=&quot;https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js&quot;>&lt;/script>
+  &lt;/head>
+
+  &lt;body>
+    &lt;!-- Div that contains the Forsta messenger client -->
+    &lt;div id=&quot;my-messenger&quot; style=&quot;width: 80%; height: 80%; visibility: hidden;&quot;>&lt;/div>
+  &lt;/body>
+
+  &lt;script>
+    function displayMessenger() {
+      const messenger = document.getElementById(&quot;my-messenger&quot;);
+      messenger.style.visibility = &quot;visible&quot;;
+    }
     
-        <div class="container-overview">
-        
-            
+    async function onLoaded(client) {
+      threadId = await client.threadMake(&quot;@userinyourorg&quot;);
+      await client.threadOpen(threadId);
+      
+      displayMessenger();
+    }
 
-<dl class="details">
+    // Configure the Forsta messenger client to use the div with id my-messenger
+    // And connect as an ephemeral user using the ephemeral chat token
+    const myClient = new forsta.messenger.Client(document.getElementById('my-messenger'),
+      { jwt: 'server generated jwt' },
+      { onLoaded: onLoaded, showNav: true, showHeader: true });
+  &lt;/script>
+&lt;/html>
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client.js.html">client.js</a>, <a href="client.js.html#line10">line 10</a>
-    </li></ul></dd>
-    
+</code></pre>
+<p>If you load this code for the first time in a browser you will discover that nothing displays.
+This is because authenticated users on new systems must first provision their encryption keys.
+The <code>onLoaded</code> function fires after provisioning. To display the messenger when provisioning is
+required there are three provisioning listeners. Add the following functions to your script:</p>
+<pre class="prettyprint source lang-html"><code>function onProvisioningRequired() {
+  displayMessenger();
+}
 
-    
+function onProvisioningError() {
+  alert(&quot;Provisioning Failed!&quot;);
+}
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-            
-
-            
-        
-        </div>
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="forsta.messenger.Client.html">Client</a></dt>
-            <dd></dd>
-        </dl>
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-
-    
-
-    
+function onProvisioningDone() {
+  alert(&quot;Provisioning Finished!&quot;);
+}
+</code></pre>
+<p>Then after the <code>myClient =</code> line add the following to set the event listeners:</p>
+<pre class="prettyprint source lang-html"><code>myClient.addEventListener('provisioningrequired', onProvisioningRequired);
+myClient.addEventListener('provisioningerror', onProvisioningError);
+myClient.addEventListener('provisioningdone', onProvisioningDone);
+</code></pre>
+<p>Now, try loading the page. The provisioning listener will trigger the messenger to display.
+You have the option to either:</p>
+<ul>
+<li>Generate new keys</li>
+<li>Import previous keys from a currently running client</li>
+</ul>
+<p>You can read more about the need to provision keys on the <a href="https://docs.forsta.io/docs/system-life-cycle">System Life Cycle page</a> of the Forsta docs.</p>
 </article>
 
 </section>
-
-
-
 
     
     

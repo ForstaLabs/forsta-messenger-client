@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>Home - Documentation</title>
+    <title>Tutorial: Ephemeral User - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,81 +32,93 @@
 
 <div id="main">
     
-
+    <h1 class="page-title">Tutorial: Ephemeral User</h1>
     
 
+    <section>
 
-
+<header>
     
 
+    <h2>Ephemeral User</h2>
+</header>
 
-    <section class="package">
-        <h3>forsta-messenger-client 0.1.0</h3>		
-    </section>
-
-
-
-
-
-
-
-
-
-    
-
-
-
-    <section class="readme">
-        <article><h1>forsta-messenger-client</h1>
-<p>Client library for integrating a Forsta messenger into your web application.</p>
-<p><a href="https://www.npmjs.com/package/forsta-messenger-client"><img src="https://img.shields.io/npm/v/forsta-messenger-client.svg" alt="NPM"></a>
-<a href="https://github.com/ForstaLabs/forsta-messenger-client"><img src="https://img.shields.io/npm/l/forsta-messenger-client.svg" alt="License"></a>
-<a href="https://forstalabs.github.io/forsta-messenger-client/docs/index.html"><img src="https://img.shields.io/badge/docs-api-lightgrey.svg" alt="Docs"></a></p>
-<h2>About</h2>
-<p>This library can be bundled into your web application to integrate a Forsta
-Messenger client into your web application.</p>
-<h2>Install</h2>
-<p>The forsta-messenger-client should be included with your web page's javascript.  It can be
-added as its own <code>&lt;script&gt;</code> tag or included with your existing javascript using bundling
-software of your choosing a la., Grunt, Webpack, etc.  Depending on your desired installation
-and bundling method there are a few ways to get the forsta-messenger-client working.</p>
-<h4>From public CDN (standalone script tag) [easy]</h4>
-<p>Add the following script tag to your site.  <em>Note that this script will be the latest
-version of the forsta-messenger-client and you can not choose when version changes
-happen.</em></p>
-<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js&quot;>&lt;/script>
-</code></pre>
-<h4>NPM (for bundler based installs) [medium]:</h4>
-<pre><code>npm install forsta-messenger-client
-</code></pre>
-<p>Then include the <code>node_modules/forsta-messenger-client/dist/forsta-messenger-client.js</code> file
-into your javascript bundle.</p>
-<h4>Building from source [hard]:</h4>
-<pre><code>git clone https://github.com/ForstaLabs/forsta-messenger-client
-cd forsta-messenger-client
-npm install
-</code></pre>
-<p>To generate a build from the <code>src/</code> files run:</p>
-<pre><code>npm run build
-</code></pre>
-<p>To generate docs:</p>
-<pre><code>npm run docs
-</code></pre>
-<p>Docs are located in the <code>docs/forsta-messenger-client/&lt;version&gt;</code> folder.</p>
-<h2>Usage:</h2>
-<p>See our generated reference docs for full usage details:
-https://forstalabs.github.io/forsta-messenger-client/docs/index.html</p>
-<h2>License</h2>
-<p>Licensed under the MIT License.</p>
+<article>
+    <p>Please see the Hello World Tutorial for initial setup of the Forsta Messenger Client. Complete code for this tutorial is available at:
+<a href="https://github.com/ForstaLabs/forsta-messenger-client/tree/master/examples/ephemeral">https://github.com/ForstaLabs/forsta-messenger-client/tree/master/examples/ephemeral</a></p>
+<p>The Forsta Messenger Client can be used with two different types of users:</p>
 <ul>
-<li>Copyright 2019 Forsta Inc.</li>
-</ul></article>
-    </section>
+<li>Ephemeral - Short lived users created via API or by authenticating with the Forsta Ephemeral Chat token</li>
+<li>Regular Users - Users generated via the API without an expiration or at <a href="https://app.forsta.io">https://app.forsta.io</a></li>
+</ul>
+<p>In this tutorial we will configure the client to create an ephemeral user who can chat with a regular
+user who has the tag @support.</p>
+<p>We will start with the following base code setting up the Forsta Messenger Client in a hidden div.
+This prevents the user from seeing the client until setup is complete.</p>
+<pre class="prettyprint source lang-html"><code>&lt;html>
+  &lt;head>
+    &lt;script src=&quot;https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js&quot;>&lt;/script>
+  &lt;/head>
 
+  &lt;body>
+    &lt;div id=&quot;my-messenger&quot; style=&quot;width: 80%; height: 80%; visibility: hidden;&quot;>&lt;/div>
+  &lt;/body>
 
+  &lt;script>
+    const myClient = new forsta.messenger.Client(document.getElementById('my-messenger'),
+      { orgEphemeralToken: 'TESTING' },
+      { });
+  &lt;/script>
+&lt;/html>
 
+</code></pre>
+<p>The Forsta Messenger Client includes several callbacks that can be configured when the
+client is initialized. In this case we will set the onLoaded callback to do the following:</p>
+<ul>
+<li>Create a new conversation thread with a tagged users</li>
+<li>Open the thread in the client</li>
+<li>Display the client once the thread is available</li>
+</ul>
+<p>First, create the onload callback. It uses the threadMake command to generate a new thread
+between the ephemeral user and one or more users defined by their tags. For more information
+on using tags see <a href="https://docs.forsta.io/docs/tag-expressions">https://docs.forsta.io/docs/tag-expressions</a>. Once a thread has been
+created, it opens the thread in the client window and changes the visibility on the div to be visible.</p>
+<pre class="prettyprint source lang-html"><code>  async function onLoaded(client) {
+    thread_id = await client.threadMake(&quot;@support&quot;);
+    await client.threadOpen(thread_id);
+      
+    var messenger = document.getElementById(&quot;my-messenger&quot;);
+    messenger.style.visibility = &quot;visible&quot;;
+  }
+</code></pre>
+<p>Next, configure the client to use the call back by replacing the initialization script
+with the following:</p>
+<pre class="prettyprint source lang-html"><code>&lt;script>
+  const myClient = new forsta.messenger.Client(document.getElementById('my-messenger'),
+    { orgEphemeralToken: 'TESTING' },
+    { onLoaded: onLoaded });
+&lt;/script>
+</code></pre>
+<p>At this point, the code creates and logs in an ephemeral user and connects them
+to a messge thread with the user defined by the @support tag.</p>
+<p>As a final step we can set details about the Ephemeral User. Add to the initialization
+script the settings for <a href="global.html#EphemeralUserInfo"><code>EphemeralUserInfo</code></a>.</p>
+<pre class="prettyprint source lang-html"><code>&lt;script>
+  const myClient = new forsta.messenger.Client(document.getElementById('my-messenger'),
+    { orgEphemeralToken: 'TESTING' },
+    { onLoaded: onLoaded,
+      ephemeralUserInfo: {
+        firstName: &quot;Support&quot;,
+        lastName: &quot;Customer&quot;,
+        salt: &quot;1234&quot;
+    }});
+&lt;/script>
+</code></pre>
+<p>Now, the ephemeral user will show up in the conversation as Support Customer. The salt
+should be set to a random uuid to guarantee a new user is generated for each ephemeral user.</p>
+</article>
 
-
+</section>
 
     
     

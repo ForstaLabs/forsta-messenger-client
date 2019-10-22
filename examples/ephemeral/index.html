@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <script src="https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js"></script>
+  </head>
+
+  <body>
+    <!-- Div that contains the Forsta messenger client -->
+    <div id="my-messenger" style="width: 80%; height: 80%; visibility: hidden;"></div>
+  </body>
+
+  <script>
+    async function onLoaded(client) {
+      thread_id = await client.threadMake("@support");
+      await client.threadOpen(thread_id);
+      
+      var messenger = document.getElementById("my-messenger");
+      messenger.style.visibility = "visible";
+    }
+
+    // Configure the Forsta messenger client to use the div with id my-messenger
+    // And connect as an ephemeral user using the ephemeral chat token
+    const myClient = new forsta.messenger.Client(document.getElementById('my-messenger'),
+      { orgEphemeralToken: 'TESTING' },
+      { onLoaded: onLoaded,
+        ephemeralUserInfo: {
+          firstName: "Support",
+          lastName: "Customer",
+          salt: "1234"
+      }});
+  </script>
+</html>

@@ -23,9 +23,10 @@ Once the JavaScript library is included in your website you will have access to 
 look at is the {@link forsta.messenger.Client} class which is the primary interface for
 loading and controlling the messenger client.
 
-We need to instantiate this class with a couple arguments.  The first is the HTML element
+We need to instantiate this class with a few arguments.  The first is the HTML element
 where we should load the messenger.  The second argument is a {@link ClientAuth} configuration
-object used for controlling user authentication (or creation).
+object used for controlling user authentication (or creation). The third is a {@link ClientOptions}
+configuration object used for setting the client's initial state.
 
 
 ```html
@@ -35,7 +36,8 @@ object used for controlling user authentication (or creation).
 
 <script>
     const myClient = new forsta.messenger.Client(document.getElementById('my-messenger'),
-                                                 {orgEphemeralToken: 'TESTING'});
+                                                 {orgEphemeralToken: 'TESTING'},
+                                                 {showNav: true, showHeader: true});
 </script>
 ```
 
@@ -44,3 +46,6 @@ For more information on the org ephemeral token: {@link https://app.forsta.io/au
 
 Now that your client is instantiated you should see a messenger loaded into the div tag provided in
 the first argument.  The `myClient` variable provides access to events and control functions.
+
+Sample code is available at:
+{@link https://github.com/ForstaLabs/forsta-messenger-client/tree/master/examples/hello}

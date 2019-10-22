@@ -1,0 +1,8 @@
+{
+  "01_hello_world": {
+    "title": "Hello World"
+  },
+  "02_ephemeral_user": {
+    "title": "Ephemeral User"
+  }
+}

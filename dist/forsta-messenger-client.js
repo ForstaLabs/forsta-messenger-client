@@ -255,11 +255,13 @@ forsta.messenger = forsta.messenger || {};
  * @typedef {string} UUID
  */
 
+
 /**
  * Milliseconds since Jan 1 1970 UTC.
  *
  * @typedef {number} Timestamp
  */
+
 
 /**
  * The ID for a user in the Forsta ecosystem.
@@ -267,12 +269,14 @@ forsta.messenger = forsta.messenger || {};
  * @typedef {UUID} UserID
  */
 
+
 /**
  * The ID for a messaging thread.  Every thread must have a unique identifier which is shared
  * amongst peers to distinguish conversations.
  *
  * @typedef {UUID} ThreadID
  */
+
 
 /**
  * The ID for a message.
@@ -282,12 +286,25 @@ forsta.messenger = forsta.messenger || {};
 
 
 /**
- * Forsat JSON message exchange payload.  This is the main specification for how messages must be formatted
+ * Forsta tag expressions are any combination of tag identifiers (user or group).
+ * They can include logical operators such as plus "+" and minus "-" to explicitly add
+ * and remove certain users or groups from a distribution.  E.g...
+ * >     (@macy:acme + @jim:nasa + @sales:nsa) - @drunk:uncle
+ *
+ * @see {@link https://docs.forsta.io/docs/tag-expressions}
+ *
+ * @typedef {string} TagExpression
+ */
+
+
+/**
+ * Forsta JSON message exchange payload.  This is the main specification for how messages must be formatted
  * for communication in the Forsta ecosystem.
  *
  * @external ExchangePayload
  * @see {@link https://docs.google.com/document/d/e/2PACX-1vTv9Bahr0MyWiZT6B2xvUpBj0c3NGne0ZPeU40Kyn0UHMlYXVlEb1U5jgVCI0t9FkChVwYRCwTBTTiY/pub}
  */
+
 
 (function() {
     'use strict';
@@ -544,8 +561,7 @@ forsta.messenger = forsta.messenger || {};
          * Select or create a thread.  If the tag `expression` argument matches an
          * existing thread it will be opened, otherwise a new thread will be created.
          *
-         * @param {string} expression - The {@link TagExpression} for the desired thread's
-         *                              distribution.
+         * @param {TagExpression} expression - The thread distribution to match on or create.
          * @param {ThreadAttributes} [attrs] - Optional attributes to be applied to the resulting
          *                                     thread.
          * @returns {string} The thread ID that was opened or created.
@@ -559,7 +575,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * Ensure that a thread exists matching the expression argument.
          *
-         * @param {string} expression - The {@link TagExpression} for the thread's distribution.
+         * @param {TagExpression} expression - The thread distribution to match on or create.
          * @param {ThreadAttributes} [attrs] - Optional attributes to be applied to the resulting
          *                                     thread.
          * @returns {string} The thread ID created or matching the expression provided.
@@ -571,7 +587,7 @@ forsta.messenger = forsta.messenger || {};
         /**
          * Make a new thread.
          *
-         * @param {string} expression - The {@link TagExpression} for the thread's distribution.
+         * @param {TagExpression} expression - The thread distribution to create.
          * @param {ThreadAttributes} [attrs] - Optional attributes to be applied to the resulting
          *                                     thread.
          * @returns {string} The thread ID created or matching the expression provided.
@@ -618,8 +634,8 @@ forsta.messenger = forsta.messenger || {};
          *
          * @returns {string[]} - List of thread attibutes.
          */
-        async threadListAttributes(threadId) {
-            return await this._rpc.invokeCommand('thread-list-attributes', threadId);
+        async threadListAttributes(id) {
+            return await this._rpc.invokeCommand('thread-list-attributes', id);
         }
 
         /**
@@ -630,8 +646,8 @@ forsta.messenger = forsta.messenger || {};
          *
          * @returns {*} - The value of the thread attribute.
          */
-        async threadGetAttribute(threadId, attr) {
-            return await this._rpc.invokeCommand('thread-get-attribute', threadId, attr);
+        async threadGetAttribute(id, attr) {
+            return await this._rpc.invokeCommand('thread-get-attribute', id, attr);
         }
 
         /**
@@ -641,8 +657,8 @@ forsta.messenger = forsta.messenger || {};
          * @param {string} attr - The thread attribute to update.
          * @param {*} value - The value to set.
          */
-        async threadSetAttribute(threadId, attr, value) {
-            await this._rpc.invokeCommand('thread-set-attribute', threadId, attr, value);
+        async threadSetAttribute(id, attr, value) {
+            await this._rpc.invokeCommand('thread-set-attribute', id, attr, value);
         }
 
         /**
@@ -722,6 +738,63 @@ forsta.messenger = forsta.messenger || {};
          */
         async threadSendUpdate(id, updates, options) {
             return await this._rpc.invokeCommand('thread-send-update', id, updates, options);
+        }
+
+        /**
+         * Amend the distribution of a thread by adding tag expressions to it.
+         *
+         * @param {ThreadID} id - The thread ID to alter.
+         * @param {TagExpression} expression - Snip of valid tag expression to add to the thread.
+         *
+         * @returns {TagExpression} - The updated tag expression.
+         */
+        async threadAmendDistribution(id, expression) {
+            return await this._rpc.invokeCommand('thread-amend-distribution', id, expression);
+        }
+
+        /**
+         * Repeal a subset of a thread's distribution.
+         *
+         * @param {ThreadID} id - The thread ID to alter.
+         * @param {TagExpression} expression - Snip of valid tag expression to repeal from the thread.
+         *
+         * @returns {TagExpression} - The updated tag expression.
+         */
+        async threadRepealDistribution(id, expression) {
+            return await this._rpc.invokeCommand('thread-repeal-distribution', id, expression);
+        }
+
+        /**
+         * Add a user ID to a thread's distribution.
+         *
+         * @param {ThreadID} id - The thread ID to alter.
+         * @param {UserID} userId - User ID to add to the thread's distribution.
+         *
+         * @returns {TagExpression} - The updated tag expression.
+         */
+        async threadAddMember(id, userId) {
+            return await this._rpc.invokeCommand('thread-add-member', id, userId);
+        }
+
+        /**
+         * Remove a user ID from a thread's distribution.
+         *
+         * @param {ThreadID} id - The thread ID to alter.
+         * @param {UserID} userId - User ID to remove from the thread's distribution.
+         *
+         * @returns {TagExpression} - The updated tag expression.
+         */
+        async threadRemoveMember(id, userId) {
+            return await this._rpc.invokeCommand('thread-remove-member', id, userId);
+        }
+
+        /**
+         * Leave a thread.  I.e. remove yourself from a thread's distribution.
+         *
+         * @param {ThreadID} id - The thread ID to alter.
+         */
+        async threadLeave(id) {
+            return await this._rpc.invokeCommand('thread-leave', id);
         }
     };
 })();

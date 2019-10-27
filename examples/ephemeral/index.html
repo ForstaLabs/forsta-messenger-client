@@ -10,7 +10,7 @@
 
   <script>
     async function onLoaded(client) {
-      threadId = await client.threadMake("@support");
+      const threadId = await client.threadMake("@support");
       await client.threadOpen(threadId);
       
       const messenger = document.getElementById("my-messenger");

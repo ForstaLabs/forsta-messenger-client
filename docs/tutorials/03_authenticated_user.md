@@ -16,15 +16,10 @@ You can create a user using either:
 - [Atlas API]{@link https://atlas.forsta.io/doc/}
 
 For a user to authenticate with the Forsta Messenger Client they need to provide
-a Forsta generated JWT (JSON Web Token). In a production system JWTs are generated
-by authenticating a user with a saved auth token. For testing purposes you can
-also generate a JWT with the following shell scripts:
+a [Forsta JWT]{@link external:JWT}.  
 
-- [JWT Generator]{@link https://github.com/ForstaLabs/developer-examples/blob/master/scripts/get_jwt.sh}
-- [Required Forsta Script Library]{@link https://github.com/ForstaLabs/developer-examples/blob/master/scripts/forsta_library.sh}
-
-Once you have generated a jwt start with the following code that authenticates a user
-in the Forsta Messenger Client:
+Once you have a [Forsta JWT]{@link external:JWT} start with the following code that authenticates a user
+using the Forsta Messenger Client:
 
 ```html
 <html>
@@ -44,7 +39,7 @@ in the Forsta Messenger Client:
     }
     
     async function onLoaded(client) {
-      threadId = await client.threadMake("@userinyourorg");
+      const threadId = await client.threadMake("@userinyourorg");
       await client.threadOpen(threadId);
       
       displayMessenger();
@@ -61,7 +56,7 @@ in the Forsta Messenger Client:
 ```
 
 If you load this code for the first time in a browser you will discover that nothing displays.
-This is because authenticated users on new systems must first provision their encryption keys.
+This is because authenticated users on new systems must first provision their encryption key.
 The `onLoaded` function fires after provisioning. To display the messenger when provisioning is
 required there are three provisioning listeners. Add the following functions to your script:
 
@@ -90,9 +85,9 @@ myClient.addEventListener('provisioningdone', onProvisioningDone);
 Now, try loading the page. The provisioning listener will trigger the messenger to display.
 You have the option to either:
 
-- Generate new keys
-- Import previous keys from a currently running client
+- Generate new key
+- Import a previous key from a currently running client
 
-You can read more about the need to provision keys on the [System Life Cycle page]{@link https://docs.forsta.io/docs/system-life-cycle} of the Forsta docs.
+You can read more about the need to provision a key on the [System Life Cycle page]{@link https://docs.forsta.io/docs/system-life-cycle} of the Forsta docs.
 
 

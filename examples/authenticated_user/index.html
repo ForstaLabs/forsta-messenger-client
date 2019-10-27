@@ -27,7 +27,7 @@
     }
     
     async function onLoaded(client) {
-      threadId = await client.threadMake("@userinyourorg");
+      const threadId = await client.threadMake("@userinyourorg");
       await client.threadOpen(threadId);
       
       displayMessenger();

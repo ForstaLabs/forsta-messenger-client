@@ -40,7 +40,7 @@ client is initialized. In this case we will set the `onLoaded` callback to do th
 
 First, create the `onLoaded` callback. It uses the `threadMake` command to generate a new thread
 between the ephemeral user and one or more users defined by their tags. For more information
-on using tags see [TagExpression]{@link external:TagExpression}. Once a thread has been
+on using tags see [TagExpression]{@link TagExpression}. Once a thread has been
 created, it opens the thread in the client window and changes the visibility on the div to be visible.
 
 ```html

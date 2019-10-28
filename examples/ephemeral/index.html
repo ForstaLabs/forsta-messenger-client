@@ -10,10 +10,10 @@
 
   <script>
     async function onLoaded(client) {
-      thread_id = await client.threadMake("@support");
-      await client.threadOpen(thread_id);
+      const threadId = await client.threadMake("@support");
+      await client.threadOpen(threadId);
       
-      var messenger = document.getElementById("my-messenger");
+      const messenger = document.getElementById("my-messenger");
       messenger.style.visibility = "visible";
     }
 

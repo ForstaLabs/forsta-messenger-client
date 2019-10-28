@@ -81,6 +81,17 @@ forsta.messenger = forsta.messenger || {};
  */
 
 
+/**
+ * Forsta JWT. A Forsta JSON Web Token that is used to authenticate users with the client. JWTs
+ * are created using the Atlas API login command. Examples on calling the API are available
+ * as shell script and PHP.
+ *
+ * @external JWT
+ * @see [Atlas API Login]{@link https://atlas.forsta.io/}
+ * @see [JWT Shell Example]{@link https://github.com/ForstaLabs/developer-examples/tree/master/scripts}
+ * @see [JWT PHP Example]{@link https://github.com/ForstaLabs/developer-examples/tree/master/php}
+ */
+
 (function() {
     'use strict';
 

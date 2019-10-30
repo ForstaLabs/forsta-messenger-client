@@ -54,6 +54,15 @@ nav > h2 > a {
     padding-bottom: 0.3em;
 }
 
+nav h3 {
+    margin: 15px 0 4px;
+}
+
+nav ul a,
+nav ul a:active {
+    padding: 0.2em 0.5em;
+}
+
 nav ul ul a,
 nav ul ul a:active {
     color: #222;
@@ -111,14 +120,15 @@ h4.name.target::before {
 }
 
 nav a {
-    transition: background 400ms, color 400ms, padding 400ms;
+    transition: background 400ms, color 400ms;
 }
 nav a.target {
     background: #0088c7;
     color: white;
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
+    border-radius: 0.2em;
+    box-shadow: 1px 1px 5px #0003;
 }
+nav a.target:active,
 nav a.target:hover {
     color: white;
     text-decoration: none;
@@ -136,16 +146,28 @@ h4.name a {
 
 nav > ul > li > a {
     color: black;
+    margin-top: 0;
 }
 
 .signature {
-    color: #7ab4ff;
+    color: #ffd95f;
     font-size: 0.85em;
     font-weight: normal;
 }
 
-a, a.active,
-span.param-type,.params td .param-type, .param-type dd {
+span.param-type,
+.params td .param-type,
+.param-type dd {
+    color: #6082a0;
+}
+
+.param-type a,
+.param-type dd a {
+    color: #3985ff;
+}
+
+a,
+a:active {
     color: #458bfa;
 }
 
@@ -213,7 +235,7 @@ article > h5 {
 .type-signature,
 .type-signature a {
     color: #ff9f48 !important;
-    font-size: 0.8em;
+    font-size: 0.9em;
     font-weight: normal;
 }
 .type-signature a {

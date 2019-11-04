@@ -1,0 +1,78 @@
+    
+<html>
+  <head>
+    <script src="https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js"></script>
+  </head>
+
+  <body>
+    <!-- Div that contains the Forsta messenger client -->
+    <div id="my-messenger" style="width: 80%; height: 80%; visibility: hidden;"></div>
+  </body>
+
+  <script>
+        
+    function onProvisioningRequired() {
+      displayMessenger();
+    }
+    function onProvisioningError() {
+      alert("Provisioning Failed!");
+    }
+    function onProvisioningDone() {
+      alert("Provisioning Finished!");
+    }
+      
+    function displayMessenger() {
+      const messenger = document.getElementById("my-messenger");
+      messenger.style.visibility = "visible";
+    }
+      
+    async function onLoaded(client) {
+      //creating both threads and setting their distributions using tag expressions
+      const threadId = await client.threadEnsure("@sales + @devs + @support");
+      const threadId2 = await client.threadEnsure("@devs - @gary");
+      
+      //changing the "title" attribute of both threads
+      client.threadSetAttribute(threadId, "title", "Halloween Party");
+      client.threadSetAttribute(threadId2, "title", "Secret Stuff");
+      
+      //opening second thread and giving its messages an expiration time
+      await client.threadOpen(threadId2);
+      client.threadSetExpiration(threadId2, 5);
+      
+      //sending initial messages to created threads
+      client.threadSendMessage(threadId,"This is the planning thread for the halloween party! I know it's early, so tomorrow I'll archive this until a week before halloween.");
+      client.threadSendMessage(threadId2,"This is the planning thread for Gary's surprise party. Dont let him see this!");
+      
+      //changing the organization tags that are able to participate in the thread
+      client.threadAmendDistribution(threadId,"@marketing");
+      client.threadRepealDistribution(threadId,"@sales");
+      
+      //import date
+      var d = new Date();
+      var month = d.getMonth() + 1; //month is from 0-11, adding 1 for more readability
+      var day = d.getDate();
+
+      if (month == 10 && day == 6){
+        client.threadArchive(threadId);
+      }
+      if (month == 10 && day == 24){
+        client.threadRestore(threadId);
+      }
+      if (month == 11 && day == 1){
+        client.threadExpunge(threadId);
+        client.threadExpunge(threadId2);
+      }
+      
+      displayMessenger();
+    }
+    // Configure the Forsta messenger client to use the div with id my-messenger
+    // And connect as an ephemeral user using the ephemeral chat token
+    const myClient = new forsta.messenger.Client(document.getElementById('my-messenger'),
+      { jwt: 'add your generated JWT here' },
+      { onLoaded: onLoaded, showNav: true, showHeader: true });
+      
+    myClient.addEventListener('provisioningrequired', onProvisioningRequired);
+    myClient.addEventListener('provisioningerror', onProvisioningError);
+    myClient.addEventListener('provisioningdone', onProvisioningDone);
+  </script>
+</html>

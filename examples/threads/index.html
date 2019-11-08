@@ -32,35 +32,35 @@
       const threadId2 = await client.threadEnsure("@devs - @gary");
       
       //changing the "title" attribute of both threads
-      client.threadSetAttribute(threadId, "title", "Halloween Party");
-      client.threadSetAttribute(threadId2, "title", "Secret Stuff");
+      await client.threadSetAttribute(threadId, "title", "Halloween Party");
+      await client.threadSetAttribute(threadId2, "title", "Secret Stuff");
       
       //opening second thread and giving its messages an expiration time
       await client.threadOpen(threadId2);
-      client.threadSetExpiration(threadId2, 5);
+      await client.threadSetExpiration(threadId2, 5);
       
       //sending initial messages to created threads
-      client.threadSendMessage(threadId,"This is the planning thread for the halloween party! I know it's early, so tomorrow I'll archive this until a week before halloween.");
-      client.threadSendMessage(threadId2,"This is the planning thread for Gary's surprise party. Dont let him see this!");
+      await client.threadSendMessage(threadId,"This is the planning thread for the halloween party! I know it's early, so tomorrow I'll archive this until a week before halloween.");
+      await client.threadSendMessage(threadId2,"This is the planning thread for Gary's surprise party. Dont let him see this!");
       
       //changing the organization tags that are able to participate in the thread
-      client.threadAmendDistribution(threadId,"@marketing");
-      client.threadRepealDistribution(threadId,"@sales");
+      await client.threadAmendDistribution(threadId,"@marketing");
+      await client.threadRepealDistribution(threadId,"@sales");
       
       //import date
-      var d = new Date();
-      var month = d.getMonth() + 1; //month is from 0-11, adding 1 for more readability
-      var day = d.getDate();
+      let d = new Date();
+      let month = d.getMonth() + 1; //month is from 0-11, adding 1 for more readability
+      let day = d.getDate();
 
       if (month == 10 && day == 6){
-        client.threadArchive(threadId);
+        await client.threadArchive(threadId);
       }
       if (month == 10 && day == 24){
-        client.threadRestore(threadId);
+        await client.threadRestore(threadId);
       }
       if (month == 11 && day == 1){
-        client.threadExpunge(threadId);
-        client.threadExpunge(threadId2);
+        await client.threadExpunge(threadId);
+        await client.threadExpunge(threadId2);
       }
       
       displayMessenger();

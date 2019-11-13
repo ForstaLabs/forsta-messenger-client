@@ -5,7 +5,7 @@ This tutorial assumes you have already followed:
 
 The full code for this tutorial is available at: {@link https://github.com/ForstaLabs/forsta-messenger-client/tree/master/examples/threads}
 
-In the last tutorial we configured the client to connect, authenticate, and provision a regular user by way of API calls and the Forsta JWT. In this tutorial we will continue our exploration of the Forsta Messenger Client by introducing some thread operations.
+In the last tutorial we configured the client to connect, authenticate, and provision an authenticated user by way of API calls and the Forsta JWT. In this tutorial we will continue our exploration of the Forsta Messenger Client by introducing some thread operations.
 
 Thread operations are built-in methods that can be used to control every aspect of threads: creation, distribution, attribute designation, and deletion are among the many actions that you will be familiar with by the end of this tutorial.
 

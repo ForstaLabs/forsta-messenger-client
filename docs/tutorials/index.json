@@ -7,5 +7,8 @@
   },
   "03_authenticated_user": {
     "title": "Authenticated User"
+  },
+  "04_threads": {
+    "title": "Threads"
   }
 }

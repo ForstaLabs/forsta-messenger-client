@@ -4,9 +4,9 @@ Please see the [Hello World Tutorial]{@tutorial 01_hello_world} for initial setu
 The Forsta Messenger Client can be used with two different types of users:
 
 - Ephemeral - Short lived users created via API or by authenticating with the Forsta Ephemeral Chat token
-- Regular Users - Users generated via the API without an expiration or at {@link https://app.forsta.io}
+- Authenticated Users - Users generated via the API without an expiration or at {@link https://app.forsta.io}
 
-In this tutorial we will configure the client to create an ephemeral user who can chat with a regular
+In this tutorial we will configure the client to create an ephemeral user who can chat with an authenticated
 user who has the tag @support.
 
 We will start with the following base code setting up the Forsta Messenger Client in a hidden div.

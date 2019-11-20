@@ -615,6 +615,26 @@ forsta.messenger = forsta.messenger || {};
         async threadOpen(id) {
             await this._rpc.invokeCommand('thread-open', id);
         }
+        
+        /**
+         * Create a new call manager in a given thread.
+         *
+         * @param {string} id - The thread ID in which to create a new call manager.
+         * @param {bool} autoJoinBool - Optional true/false argument specifying whether or not the user wants
+         * to automatically join the call. Default is false.
+         */
+        async threadCallStart(id, autoJoinBool) {
+            await this._rpc.invokeCommand('thread-call-start', id, autoJoinBool);
+        }
+
+        /**
+         * Join a previously created call.
+         *
+         * @param {string} id - The thread ID that contains the call manager to be joined.
+         */
+        async threadCallJoin(id) {
+            await this._rpc.invokeCommand('thread-call-join', id);
+        }
 
         /**
          * Set the expiration time for messages in a thread.  When this value is set to a non-zero

@@ -1,0 +1,159 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://unpkg.com/tachyons@4.10.0/css/tachyons.min.css"/ >
+    
+    <script src="https://forstalabs.github.io/forsta-messenger-client/dist/forsta-messenger-client.min.js"></script>
+  </head>
+
+  <body class="w-100 sans-serif">
+    <main class="w-100 bt b--black-10 bg-white">
+      <section class="bg-white black-70 bt b--black-10">
+        <div class="ph3 ph5-ns pv4">
+          <article class="cf">
+            <div class="fl w-100 w-20-ns pr3">
+              <form onsubmit="startForsta();return false;">
+                <fieldset id="sign_up" class="ba b--transparent ph0 mh0">
+                  <h2 class="">Settings</h2>
+
+                  <div class="mv3">
+                    <label class="db fw6 lh-copy f6" for="password">Ephemeral Token<span class="red"> *</span></label>
+                    <input class="b pa2 input-reset ba bg-transparent w-100" type="password" name="ephemeral-token"  id="ephemeral-token">
+                  </div>
+
+                  <div class="mt3">
+                    <label class="db fw6 lh-copy f6" for="email-address">Ephemeral First Name</label>
+                    <input class="pa2 input-reset ba bg-transparent w-100" type="text" name="first-name"  id="first-name" placeholder="Ephemeral">
+                  </div>
+
+                  <div class="mt3">
+                    <label class="db fw6 lh-copy f6" for="email-address">Ephemeral Last Name</label>
+                    <input class="pa2 input-reset ba bg-transparent w-100" type="text" name="last-name"  id="last-name" placeholder="User">
+                  </div>
+
+                  <div class="mt3">
+                    <label class="db fw6 lh-copy f6" for="email-address">Conversation Title</label>
+                    <input class="pa2 input-reset ba bg-transparent w-100" type="text" name="title" id="title"  placeholder="Greetings">
+                  </div>
+
+                  <div class="mt3">
+                    <label class="db fw6 lh-copy f6" for="email-address">Contact</label>
+                    <input class="pa2 input-reset ba bg-transparent w-100" type="text" name="contact"  id="contact" placeholder="@support">
+                  </div>
+
+                  <div class="mt3">
+                    <label class="db fw6 lh-copy f6" for="email-address">Delete After Read Seconds</label>
+                    <input class="pa2 input-reset ba bg-transparent w-100" type="number" name="after-read"  id="after-read" min="60" max="600" placeholder="120">
+                  </div>
+
+                  <div class="mv3">
+                    <label class="fw6 lh-copy f6 pointer mr2"><input id="show-nav" type="checkbox"> Show Navigation</label>
+                    <label class="fw6 lh-copy f6 pointer"><input id="show-header" type="checkbox"> Show Header</label>
+                  </div>
+
+                </fieldset>
+                <div class="">
+                  <input class="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib" type="submit" value="Start Client">
+                </div>
+              </form>
+            </div>
+
+            <div class="fl w-100 w-80-ns tc">
+              <h2 class="fl">
+                Forsta Client
+                <button id="open-button" class="ml4 f6 br2 ph3 pv2 mb2 dn white bg-blue" onclick="openMessenger()">
+                  Open
+                </button>
+                <button id="close-button" class="ml4 f6 br2 ph3 pv2 mb2 dn white bg-blue" onclick="closeMessenger()">
+                  Close
+                </button>
+              </h2>
+              
+              <!-- Div that contains the Forsta messenger client -->
+              <div id="my-messenger" class="dn" style="width: 100%; height: 80%;">
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+
+  <script>
+    function openMessenger() {
+      const messenger = document.getElementById("my-messenger");
+      messenger.classList.add("db");
+      messenger.classList.remove("dn");
+      
+      const closeButton = document.getElementById("close-button");
+      closeButton.classList.add("dib");
+      closeButton.classList.remove("dn");
+
+      const openButton = document.getElementById("open-button");
+      openButton.classList.add("dn");
+      openButton.classList.remove("dib");      
+    }
+    
+    function closeMessenger(client) {
+      const messenger = document.getElementById("my-messenger");
+      messenger.classList.add("dn");
+      messenger.classList.remove("db");
+
+      const openButton = document.getElementById("open-button");
+      openButton.classList.add("dib");
+      openButton.classList.remove("dn");
+
+      const closeButton = document.getElementById("close-button");
+      closeButton.classList.add("dn");
+      closeButton.classList.remove("dib");
+    }
+
+    async function onLoaded(client) {
+      const conversationWith = document.getElementById('contact').value || "@support";
+      const attrs = {
+        title: document.getElementById('title').value || "Greetings"
+      };
+      const threadId = await client.threadMake(conversationWith, attrs);
+      await client.threadOpen(threadId);
+
+      const deleteAfterReadSeconds = document.getElementById('after-read').value || "120";
+      await client.threadSetExpiration(threadId, parseInt(deleteAfterReadSeconds));
+
+      openMessenger();
+    }
+    
+    async function onMessage(details) {
+      openMessenger();
+    }
+    
+    // Configure the Forsta messenger client to use the div with id my-messenger
+    // And connect as an ephemeral user using the ephemeral chat token
+    function startForsta() {
+      closeMessenger();
+
+      const messenger = document.getElementById('my-messenger');
+      messenger.innerHTML = "";
+
+      const orgEphemeralToken = document.getElementById('ephemeral-token').value;
+      if (orgEphemeralToken == "") {
+        alert("Please set the Ephemeral Token.");
+        return;
+      }
+      const auth = { orgEphemeralToken: orgEphemeralToken };
+
+      const options = {
+        showNav: document.getElementById('show-nav').checked,
+        showHeader: document.getElementById('show-header').checked,
+        onLoaded: onLoaded,
+        ephemeralUserInfo: {
+          firstName: document.getElementById('first-name').value || "Ephemeral",
+          lastName: document.getElementById('last-name').value || "User"
+        }
+      };
+
+      const myClient = new forsta.messenger.Client(messenger, auth, options);
+      myClient.addEventListener('thread-mesage', onMessage);
+    }
+
+      
+  </script>
+</html>
